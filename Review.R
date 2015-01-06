@@ -66,7 +66,6 @@ testPlot <- function (k) {
 }
 
 if (SavePlotsToFiles) {
-  #png (filename=sprintf("~/RStudio/%s/%s%sPlot%%02d.png", Project, Project, Flight))
   plotfile = sprintf("~/RStudio/%s/%s%sPlots.pdf", Project, Project, Flight)
   pdf (file = plotfile)
   print (sprintf ("plots saved in file %s", plotfile))
@@ -667,6 +666,8 @@ for (j in 1:(length(s)-1)) {
 if (SavePlotsToFiles) {
   dev.off()
 }
+
+system (sprintf ("evince %s", plotfile))
 
 
 

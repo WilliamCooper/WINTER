@@ -7,7 +7,7 @@ require(mapproj)
 SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
 Flight <- "rf09"
 Project <- "FRAPPE"
-x <- readline(sprintf("Project is %s; CR to accept or enter new project name:$", Project))
+x <- readline(sprintf("Project is %s; CR to accept or enter new project name:", Project))
 if (nchar(x) > 1) {Project <- x}
 print(sprintf("Project is %s", Project))
 x <- readline(sprintf("Flight is %s; CR to accept or enter new flight name (rfxx format):", 
@@ -21,7 +21,7 @@ if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
 print (nplots)
 
 ### get data
-fname = sprintf("%s%s/%s%sR.nc", DataDirectory (), Project, Project, Flight)
+fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
 print (fname)
 # VarList must include all variable names that are used in this routine
 VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
@@ -63,6 +63,12 @@ formatTime <- function (time) {
 }
 testPlot <- function (k) {
   return(k %in% nplots || nplots == 0)
+}
+
+SmoothInterp <- function (x) {
+  d <- zoo::na.approx (as.vector(x), maxgap=100, na.rm = FALSE)
+  d[is.na(d)] <- 0
+  return (signal::filter(signal::sgolay(3, 61), d))
 }
 
 if (SavePlotsToFiles) {
@@ -444,33 +450,35 @@ if (testPlot (16)) {
   # DBAR:
   op <- par (mar=c(2,4,1,1)+0.1)
   DF <- DataV[, c("Time", "DBARD_LPC", "DBARF_LPO")]
-  DF$DBARD_LPC <- signal::filter(signal::sgolay(3, SG2), DataV$DBARD_LPC)
-  DF$DBARF_LPO <- signal::filter(signal::sgolay(3, SG2), DataV$DBARF_LPO)
+  # the following complication is needed because the filter function won't accept NAs
+  # this is interpolation. na.rm=FALSE needed to keep vector length in sync with Time
+  DF$DBARD_LPC <- SmoothInterp (DataV$DBARD_LPC)
+  DF$DBARF_LPO <- SmoothInterp (DataV$DBARF_LPO)
   plotWAC (DF, ylim=c(0,30), ylab="DBAR", legend.position="topright")
   title ("1-min filter", cex.main=0.75)
   DF <- DataV[, c("Time", "DBAR3_RPO", "DBARP_RPI")]
-  DF$DBAR3_RPO <- signal::filter(signal::sgolay(3, SG2), DataV$DBAR3_RPO)
-  DF$DBARP_RPI <- signal::filter(signal::sgolay(3, SG2), DataV$DBARP_RPI)
+  DF$DBARD3_RPO <- SmoothInterp (DataV$DBAR3_RPO)
+  DF$DBARP_RPI <- SmoothInterp (DataV$DBARP_RPI)
   plotWAC (DF, ylim=c(0,2), ylab="DBAR", legend.position="topright")
   title ("1-min filter", cex.main=0.75)
   op <- par (mar=c(5,4,1,1)+0.1)
   DF <- DataV[, c("Time", "DBAR1DC_LPI")]
-  DF$DBAR1DC_LPI <- signal::filter(signal::sgolay(3, SG2), DataV$DBAR1DC_LPI)
+  DF$DBAR1DC_LPI <- SmoothInterp (DataV$DBAR1DC_LPI)
   plotWAC (DF)
   title ("1-min filter", cex.main=0.75)
   # PLWC:
   op <- par (mar=c(2,4,1,1)+0.1)
   DF <- DataV[, c("Time", "PLWCD_LPC", "PLWCF_LPO", "PLWCC")]
-  DF$PLWCD_LPC <- signal::filter(signal::sgolay(3, SG2), DataV$PLWCD_LPC)
-  DF$PLWCF_LPO <- signal::filter(signal::sgolay(3, SG2), DataV$PLWCF_LPO)
-  DF$PLWCC <- signal::filter(signal::sgolay(3, SG2), DataV$PLWCC)
+  DF$PLWCD_LPC <- SmoothInterp (DataV$PLWCD_LPC)
+  DF$PLWCF_LPO <- SmoothInterp (DataV$PLWCF_LPO)
+  DF$PLWCC <- SmoothInterp (DataV$PLWCC)
   plotWAC (DF, ylim=c(0,1), ylab="PLWCy", legend.position="topright")
   title ("1-min filter", cex.main=0.75)
   plotWAC (DataV[, c("Time", "PLWC", "RICE")], ylim=c(0,25), ylab="PLWC (Watts)")
   hline (Data$Time, 10); hline (Data$Time, 15)
   op <- par (mar=c(5,4,1,1)+0.1)
   DF <- DataV[, c("Time", "PLWC1DC_LPI")]
-  DF$PLWC1DC_LPI <- signal::filter(signal::sgolay(3, SG2), DataV$PLWC1DC_LPI)
+  DF$PLWC1DC_LPI <- SmoothInterp (DataV$PLWC1DC_LPI)
   plotWAC (DF, ylim=c(0,1))
   title ("1-min filter", cex.main=0.75)
   # more info on FSSP (REJDOF, transit time rejects, laser voltage)
@@ -667,7 +675,7 @@ if (SavePlotsToFiles) {
   dev.off()
 }
 
-system (sprintf ("evince %s", plotfile))
+#system (sprintf ("evince %s", plotfile))
 
 
 

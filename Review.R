@@ -38,11 +38,7 @@ require(mapproj)
 SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
 Flight <- "rf09"
 Project <- "FRAPPE"
-<<<<<<< HEAD
 x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
-=======
-x <- readline(sprintf("Project is %s; CR to accept or enter new project name:", Project))
->>>>>>> 61e9d2b403135430b047f9b2ff13a9406719a3fe
 if (nchar(x) > 1) {Project <- x}
 print(sprintf("Project is %s", Project))
 x <- readline(sprintf("Flight is %s; CR to accept or enter new flight name (rfxx format): ", 
@@ -504,7 +500,6 @@ RPlot16 <- function (data) {
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
   # DBAR:
   op <- par (mar=c(2,4,1,1)+0.1)
-<<<<<<< HEAD
   DF <- data[, c("Time", "DBARD_LPC", "DBARF_LPO")]
   DF$DBARD_LPC <- SmoothInterp(data$DBARD_LPC)
   DF$DBARF_LPO <- SmoothInterp(data$DBARF_LPO)
@@ -518,50 +513,21 @@ RPlot16 <- function (data) {
   op <- par (mar=c(5,4,1,1)+0.1)
   DF <- data[, c("Time", "DBAR1DC_LPI")]
   DF$DBAR1DC_LPI <- SmoothInterp(data$DBAR1DC_LPI)
-=======
-  DF <- DataV[, c("Time", "DBARD_LPC", "DBARF_LPO")]
-  # the following complication is needed because the filter function won't accept NAs
-  # this is interpolation. na.rm=FALSE needed to keep vector length in sync with Time
-  DF$DBARD_LPC <- SmoothInterp (DataV$DBARD_LPC)
-  DF$DBARF_LPO <- SmoothInterp (DataV$DBARF_LPO)
-  plotWAC (DF, ylim=c(0,30), ylab="DBAR", legend.position="topright")
-  title ("1-min filter", cex.main=0.75)
-  DF <- DataV[, c("Time", "DBAR3_RPO", "DBARP_RPI")]
-  DF$DBARD3_RPO <- SmoothInterp (DataV$DBAR3_RPO)
-  DF$DBARP_RPI <- SmoothInterp (DataV$DBARP_RPI)
-  plotWAC (DF, ylim=c(0,2), ylab="DBAR", legend.position="topright")
-  title ("1-min filter", cex.main=0.75)
-  op <- par (mar=c(5,4,1,1)+0.1)
-  DF <- DataV[, c("Time", "DBAR1DC_LPI")]
-  DF$DBAR1DC_LPI <- SmoothInterp (DataV$DBAR1DC_LPI)
->>>>>>> 61e9d2b403135430b047f9b2ff13a9406719a3fe
   plotWAC (DF)
   title ("1-min filter", cex.main=0.75)
   # PLWC:
   op <- par (mar=c(2,4,1,1)+0.1)
-<<<<<<< HEAD
   DF <- data[, c("Time", "PLWCD_LPC", "PLWCF_LPO", "PLWCC")]
   DF$PLWCD_LPC <- SmoothInterp(data$PLWCD_LPC)
   DF$PLWCF_LPO <- SmoothInterp(data$PLWCF_LPO)
   DF$PLWCC <- SmoothInterp(data$PLWCC)
-=======
-  DF <- DataV[, c("Time", "PLWCD_LPC", "PLWCF_LPO", "PLWCC")]
-  DF$PLWCD_LPC <- SmoothInterp (DataV$PLWCD_LPC)
-  DF$PLWCF_LPO <- SmoothInterp (DataV$PLWCF_LPO)
-  DF$PLWCC <- SmoothInterp (DataV$PLWCC)
->>>>>>> 61e9d2b403135430b047f9b2ff13a9406719a3fe
   plotWAC (DF, ylim=c(0,1), ylab="PLWCy", legend.position="topright")
   title ("1-min filter", cex.main=0.75)
   plotWAC (data[, c("Time", "PLWC", "RICE")], ylim=c(0,25), ylab="PLWC (Watts)")
   hline (10); hline (15)
   op <- par (mar=c(5,4,1,1)+0.1)
-<<<<<<< HEAD
   DF <- data[, c("Time", "PLWC1DC_LPI")]
   DF$PLWC1DC_LPI <- SmoothInterp(data$PLWC1DC_LPI)
-=======
-  DF <- DataV[, c("Time", "PLWC1DC_LPI")]
-  DF$PLWC1DC_LPI <- SmoothInterp (DataV$PLWC1DC_LPI)
->>>>>>> 61e9d2b403135430b047f9b2ff13a9406719a3fe
   plotWAC (DF, ylim=c(0,1))
   title ("1-min filter", cex.main=0.75)
   # more info on FSSP (REJDOF, transit time rejects, laser voltage)
@@ -798,11 +764,6 @@ if (SavePlotsToFiles) {
   system (sprintf ("evince %s", plotfile))
 }
 
-<<<<<<< HEAD
-
-=======
-#system (sprintf ("evince %s", plotfile))
->>>>>>> 61e9d2b403135430b047f9b2ff13a9406719a3fe
 
 
 

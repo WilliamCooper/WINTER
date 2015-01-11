@@ -36,7 +36,7 @@ if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
 print (nplots)
 
 ### get data
-fname = sprintf("%s%s/%s%sR.nc", DataDirectory (), Project, Project, Flight)
+fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
 print (fname)
 # VarList must include all variable names that are used in this routine
 VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
@@ -45,9 +45,9 @@ VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
              "CONCF_LPO", "CONCD_LPC", "CONC3_RPO", "CONCN","CONCP_RPI", "CONC1DC_LPI",
              "CORAW_AL", "DBARF_LPO", "DBARD_LPC", "DBAR3_RPO", "DBAR1DC_LPI", "DBARP_RPI",
              "DP_UVH", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
-             "EW_DPT", "EW_UVH", "FCN", "FCNC", "GGALT", "GGALT_NVTL", "PALT", 
+             "EW_DPT", "EW_UVH", "FCN", "FCNC", "GGALT", "GGALT_GMN", "PALT", 
              "ALT", "ALT_A", "ALT_A2", "GGLAT", "GGLON", "GGSPD", "GGQUAL", 
-             "GGVEW", "GGVNS", "GGVEW_NVTL", "GGVNS_NVTL", "GGVSPD_NVTL",
+             "GGVEW", "GGVNS", "GGVEW_GMN", "GGVNS_GMN", "GGVSPD",
              "GSPD", "GSPD_A", "GVEW_A", "GVNS_A", "IWD", "IWS", "WDC", "WSC",
              "LAT", "LON", "LATC", "LONC", "LAT_A", "LON_A", "MACHF", "MACHR",
              "MACH_A", "MR", "MR_UVH", "PALT_A", "PITCH", "UXC", "VYC",
@@ -385,12 +385,12 @@ RPlot9 <- function (data) {
 #---------------------------------------------------------------------------
 ### plot 10: Schuler oscillation
 RPlot10 <- function (data) {
-  ## needs GGVEW_NVTL, GGVNS_NVTL, VEW, VNS, GGQUAL
+  ## needs GGVEW_GMN, GGVNS_GMN, VEW, VNS, GGQUAL
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,3))
   op <- par (mar=c(2,4,1,1)+0.1)
   DF <- data[, c("Time", "GGVEW", "VEW")]
   DF$DifferenceX50 <- (data$GGVEW-data$VEW)*50
-  DF$GGVEW_NVTL <- data$GGVEW_NVTL
+  DF$GGVEW_GMN <- data$GGVEW_GMN
   line.colors=c('blue', 'darkorange', 'red', 'skyblue')
   line.widths <- c(1,1,1)
   line.types <- c(1, 9, 1, 2)
@@ -400,7 +400,7 @@ RPlot10 <- function (data) {
           box.col='red', text.col='red', cex=0.5)
   DF <- data[, c("Time", "GGVNS", "VNS")]
   DF$DifferenceX50 <- (data$GGVNS-data$VNS)*50
-  DF$GGVNS_NVTL <- data$GGVNS_NVTL
+  DF$GGVNS_GMN <- data$GGVNS_GMN
   plotWAC(DF, col=line.colors, lwd=line.widths, lty=line.types)
   hline (50, 'red'); hline (-50, 'red')
   legend ("bottomleft", legend="dashed-red: +/- 1 m/s, Difference", 
@@ -485,17 +485,17 @@ RPlot12 <- function (data) {
 #----------------------------------------------------------------------------
 ### plot 13: IRU continued, ACINS, VSPD
 RPlot13 <- function (data) {
-  ## needs ACINS, ACINS_IRS2, FSPD, FSPD_A, GGVSPD_NVTL, GGALT, GGALT_NVTL, ALT_A, ALT_A2
+  ## needs ACINS, ACINS_IRS2, FSPD, FSPD_A, GGVSPD, GGALT, GGALT_GMN, ALT_A, ALT_A2
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
   op <- par (mar=c(2,4,1,1)+0.1)
   DF <- data[, c("Time", "ACINS", "ACINS_IRS2")]
   plotWAC (DF, ylab="ACINS")
   title (sprintf ("mean vertical acceleration: %.3f", mean (data$ACINS, na.rm=TRUE)))
-  plotWAC (data[, c("Time", "VSPD", "VSPD_A", "GGVSPD_NVTL")])
+  plotWAC (data[, c("Time", "VSPD", "VSPD_A", "GGVSPD")])
   title (sprintf ("mean vertical velocity: %.3f (IRS) and %.3f (GPS)",
-                  mean (data$VSPD, na.rm=TRUE), mean (data$GGVSPD_NVTL, na.rm=TRUE)))
+                  mean (data$VSPD, na.rm=TRUE), mean (data$GGVSPD, na.rm=TRUE)))
   op <- par (mar=c(5,4,1,1)+0.1)
-  plotWAC (data[, c("Time", "GGALT", "GGALT_NVTL", "ALT_A", "ALT_A2")],
+  plotWAC (data[, c("Time", "GGALT", "GGALT_GMN", "ALT_A", "ALT_A2")],
            legend.position = "topright")
 }
 

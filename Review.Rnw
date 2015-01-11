@@ -160,7 +160,7 @@ if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
 print (nplots)
 
 ### get data
-fname = sprintf("%s%s/%s%sR.nc", DataDirectory (), Project, Project, Flight)
+fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
 print (fname)
 # VarList must include all variable names that are used in this routine
 VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",

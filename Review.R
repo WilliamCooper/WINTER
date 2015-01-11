@@ -1,6 +1,7 @@
 
 ## ----initialization,echo=FALSE,include=FALSE-----------------------------
 
+library(knitr)
 opts_chunk$set(echo=FALSE, include=TRUE, fig.lp="fig:")
 opts_chunk$set(fig.width=5.5, fig.height=7, fig.align="center", 
                digits=4, fig.show="asis")
@@ -11,7 +12,6 @@ require(mapdata, quietly=TRUE)
 require(mapproj, quietly=TRUE)
 require(ggplot2)
 require(grid)
-library(knitr)
 require(ggthemes)
 
 

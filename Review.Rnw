@@ -1,5 +1,119 @@
+%% LyX 2.1.2 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt]{article}
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
+\usepackage[letterpaper]{geometry}
+\geometry{verbose,tmargin=3.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm,headheight=1cm,headsep=2cm,footskip=0.5cm}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\setlength{\parskip}{\medskipamount}
+\setlength{\parindent}{0pt}
+\usepackage{color}
+\usepackage[unicode=true,colorlinks=true,linkcolor=black,urlcolor=blue]
+{hyperref}
+\usepackage{breakurl}
 
-## ----initialization,echo=FALSE,include=FALSE-----------------------------
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\input colordvi
+\usepackage{color}
+\fancyhead{}
+\fancyfoot[CE,CO]{}
+\newtoks{\addressee} \global\addressee={}
+\newdimen\longindent \longindent=3.5truein
+\fancyhead[L]{Memo to: \the\addressee \\ \datetoday \\ Page \thepage \hfill}
+\renewcommand{\headrulewidth}{0.0pt}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+\newcommand{\datetoday}{\number\day\space
+     \ifcase\month\or January\or February\or March\or April\or May\or
+     June\or July\or August\or September\or October\or November\or
+     December\fi
+     \space\number\year}
+\newcommand{\EOLmemo}{\null \vskip-1.5truein
+{\raggedright \textsf{\textsc{\large \textcolor{blue}{Earth Observing Laboratory}}}}\par
+{\raggedright \textsf{\textsl{\textcolor{blue}{Memorandum:}}}} \par \vskip6pt
+{\color{blue}{\hrule}}\par
+\vskip0.3truein \leftline{\hskip \longindent \datetoday} \vskip0.2truein
+\thispagestyle{empty}}
+\newcommand{\attachm}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachments:] {#1}
+\end{lyxlist}}
+\newcommand{\cc}[1]{\begin{lyxlist}{Attachments:00}
+\item [cc:] {#1}
+\end{lyxlist}}
+\newcommand{\attach}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachment:] {#1}
+\end{lyxlist}}
+%usage: \encl{A\\B\\C} or \cc{ma,e1\\name2\\name3}
+
+\makeatother
+
+\begin{document}
+\EOLmemo 
+
+\global\addressee={WINTER data-processing file}  % >>change "File" to the "To:" name desired
+
+\begin{tabular}{ll}
+\textsf{\textsc{\textcolor{blue}{To:}}} & \the\addressee\tabularnewline
+\textsf{\textsc{\textcolor{blue}{From:}}} & Al Cooper\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Subject:}}} & Data review: Using the 'Review.R' program\tabularnewline
+\end{tabular}
+
+\bigskip
+
+
+\section{General description}
+
+This program uses a set of functions to make plots that are designed
+to provide a starting point for quality assessment for C-130 projects,
+esp. WINTER. This structure makes it easy to change the set of plots
+for a particular project, to refine the time range for plots, to re-generate
+a subset of the plots, to add new plots, and otherwise to tailor the
+output to project and personal needs. This memo shows typical output
+from the program, suggests how each plot should look and how to spot
+problems, and provides a record of how output should look when systems
+are functioning properly
+
+The program can be used in different ways. The simplest is to 
+source(\textquotedbl{}Review.R\textquotedbl{})
+from an R console, including the console in RStudio. The program asks
+for a project and flight, uses a standard set of plots or allows a
+user to change that set interactively, and then produces a PDF file
+that is a concatenation of the plots produced. PNG files could also
+be produced and would provide a much smaller output size, but PDFs
+have the advantage of maintaining quality when magnified (and are
+also easier to concatenate) so that has been selected even though
+that format produces large files (of typical size 10 MB).
+
+Other ways to use the Review.R script and routines include:
+\begin{enumerate}
+\item After running the script, the individual plot functions are available
+and the assignment of plots to the PDF file has been cancelled, so
+you can re-generate any selected plots for console or RStudio display,
+optionally with variable or time-segment modifications.
+\item 'Review.R' can be incorporated into an Rnw document where comments
+can be added to provide a record of problems identified or needing
+further study, and this might be useful documentation to preserve
+and distribute. This document is an example of that use.
+\item It may be useful to make the plot functions in this routine available
+as a package so they can be used easily without needing the full structure
+of 'Review.R'
+\end{enumerate}
+<<initialization,echo=FALSE,include=FALSE>>=
 
 opts_chunk$set(echo=FALSE, include=TRUE, fig.lp="fig:")
 opts_chunk$set(fig.width=5.5, fig.height=7, fig.align="center", 
@@ -14,9 +128,19 @@ require(grid)
 library(knitr)
 require(ggthemes)
 
+@
 
 
-## ----configuration, include=TRUE-----------------------------------------
+\section{Running the program}
+
+When the program is run as an R script, it will interactively ask
+for a flight name, and description of the plots desired. The flight
+name should have the format ``rf09'' (without quote marks). The
+plot description can be 0 (all plots), -1 (project default set), or
+a series of plots in the format ``c(3,5,7)'' (without quotes). The 
+start-up should look like this:
+
+<<configuration, include=TRUE>>=
 
 SavePlotsToFiles <- FALSE # if TRUE plots are saved to a file, and not displayed
 nps <- 20
@@ -785,9 +909,87 @@ SpeedRunSearch <- function (data) {
 
 #----------------------------------------------------------------------------
 
+@
 
 
-## ----fig-captions--------------------------------------------------------
+
+
+\section{Interpreting the plots}
+
+These are short descriptions of the plot functions. In each case, functions 
+generate the plots, often with multiple plots per function:
+\begin{quotation}
+plot 1: construct flight track with map
+
+plot 2: construct one-per-hour track plots
+
+plot 3: plot all temperatures, one plot
+
+plot 4: plot differences, individual pairs of temperatures
+
+plot 5: humidity
+
+plot 6: ambient pressures
+
+plot 7: dynamic pressure; also TAS and MACH
+
+plot 8: total pressure (static + dynamic)
+
+plot 9: wind
+
+plot 10: Schuler oscillation
+
+plot 11: attack, sideslip
+
+Plot 12: IRU comparisons
+
+plot 13: IRU continued, ACINS, VSPD
+
+plot 14: UHSAS
+
+plot 15: CN, FSSP, CDP, F300, CONCP
+
+plot 16: DBAR (mean diameters) and PLWC (liquid water content)
+
+Plot 17: all-flight Skew-T
+
+plot 18: plot skew-T for individual climbs and descents:
+
+plot 19: potential-temperature plots
+
+plot 20: CDP/SP100 size distributions
+\end{quotation}
+It is also possible to generate a subset of the plots, and that will
+also affect the plot numbering.
+In the following description of the plots, proper figure numbers are
+used for this example, but the numbering may change. The sequence,
+however, should remain the same.
+
+The plots in this memo are reduced in size compared to the PDF file
+that is generated by running Review.R. When using this guide, it may
+be useful to use the full-scale plots because some of the legends
+and other features are hard to read at this reduced size. For each
+plot, a few-paragraph description is provided. The intent of those
+descriptions is to suggest how to interpret the plot as an indicator
+of potential problems. Therefore, most of the descriptions give expected
+tolerances for differences among sensors or other quantifiable departures
+from expected behavior that should trigger further investigation of
+the measurements. That is the intent of these plots: To provide quick
+indications of problems so that they can be investigated further,
+usually with other tools. Users should pay particular attention to
+the tolerances denoted on many plots by dashed lines and to the titles
+where mean differences between redundant measurements are listed.
+Once a ``good'' set of plots is obtained for a project, that set
+should be used as a reference for future flights because changes in
+the patterns, even more than tests against specified tolerances, are
+the best indicators of problems.
+
+Note that, because this memo is written before the start of WINTER, 
+FRAPPE measurements are used for the illustrations. In particular,
+FRAPPE rf09 was used to generate these plots. An undated example will
+be needed once WINTER data become available.
+
+<<fig-captions>>=
 
 SE <- getStartEnd (Data$Time)
 i <- getIndex (Data$Time, SE[1])
@@ -822,19 +1024,31 @@ RPlot19Cap <- c("Measurements of potential and virtual potential temperature (to
                 "Vertical profiles of the same measurements shown in the preceding figure.")
 RPlot20Cap <- "Size distributions measured by the CDP and FSSP, each representing 1-s of measurements." 
 
+@
 
-
-## ----track-plot, fig.cap=c(RPlot1aCap, RPlot1bCap), fig.height=5.5-------
+<<track-plot, fig.cap=c(RPlot1aCap, RPlot1bCap), fig.height=5.5>>=
 
 if (testPlot(1)) {RPlot1(Data, Flight)}
 
-
-## ----plot-2--------------------------------------------------------------
+<<plot-2>>=
 if (testPlot(2)) {RPlot2 (Data)}
 
+@
 
 
-## ----plot-3-temperature, fig.cap=RPlot3Cap, fig.height=5.5---------------
+\paragraph{Flight track:}
+
+The first plot function generates two flight-track plots, Fig. \ref{fig:track-plot1}
+a plan-view and Fig. \ref{fig:track-plot2} showing height-vs-time.
+These provide general context that may be useful when looking at the
+remaining plots, but they can be suppressed if desired because they
+usually don't indicate problems with data quality. In some cases the
+flight track becomes overlaid to such an extent that it is hard to
+use, so for such cases it may be useful to enable nplot=2, which plots
+separate flight tracks for each hour of flight. Normally this is disabled
+as not particularly useful for quality-review of the data.\vfill\eject
+
+<<plot-3-temperature, fig.cap=RPlot3Cap, fig.height=5.5>>=
 
 # this code is for use in Review.R where the text of this memo is not included:
 # for (np in 3:nps) {
@@ -843,93 +1057,510 @@ if (testPlot(2)) {RPlot2 (Data)}
 if (testPlot (3)) {RPlot3 (DataV)}
 if (testPlot (4)) {RPlot4 (DataV)}
 
+@
 
 
-## ----humidity, fig.cap=RPlot5Cap, fig.width=6, fig.height=6--------------
+\paragraph{Air temperature:}
+
+Figure \ref{fig:plot-3-temperature1} shows the time history of measured
+air temperature from the various temperature sensors, 
+and Fig. \ref{fig:plot-3-temperature2}
+compares these sensors in pairs of measurements. After all corrections,
+these should agree to within about 1$^{\circ}$C; claimed uncertainty
+is about 0.3$^{\circ}$C. In particular, ATHR1 and ATHR2 should agree
+to within about 0.3$^{\circ}$C.~ AT\_A, the temperature from the
+aircraft avionics system, will often show larger scatter; this should
+not be considered a problem unless it exceeds about 2 C. It appears
+mostly because that measurement has slow response, either from filtering
+or delays or both, and this usually accounts for the errors. It is
+common to see two lines on the AT\_A-vs-ATHL2 plot for the same reason;
+one is from measurements during climb and the other from those during
+descent. %
+\footnote{For this FRAPPE flight, the plot of ATHL2 vs ATHL1 and the history
+plot both indicate problems with ATHL1 during the first part of this
+flight, with the problem resolved about midway through the flight.
+Also, AT\_A is clearly offset from the other measurements for measurements
+around -10$^{\circ}$C.%
+}
+\vfill\eject
+
+\paragraph{Humidity:}
+<<humidity, fig.cap=RPlot5Cap, fig.width=6, fig.height=6>>=
 if (testPlot (5)) {RPlot5 (DataV)}
+@
 
+Four plots are generated by function RPlot5 (). 
+The first (Fig.~\ref{fig:humidity1})
+shows the history of various measurements of dew point, including
+those from sensors like the UV hygrometer or the VCSEL for which dew
+point must be calculated from the direct measurements.
 
-## ----static-pressure, fig.cap=RPlot6Cap, fig.height=5--------------------
+Agreement among these measurements to within about 1$^{\circ}$C is
+good. It is common to have problems during and after descent, like
+that shown near 20:00 on this plot, where the dew-point sensors overheat
+in an effort to remove thick condensate that forms when the temperature
+increases rapidly. ATX is also plotted on this history to provide
+a reference: When the dew point temperature exceeds the temperature,
+even by a few degrees, there is very likely a problem because this
+almost never occurs in reality. There are some significant differences
+also at maximum altitude and lowest dew point (about 19:25), mostly
+in this case because of disagreement between the UV hygrometer and
+the dew-point sensors. The UV hygrometer does not show the over-heating
+problem that the dew-point sensors have at about 20:00. The differences
+between the mean values for the dew-point sensors (listed in the title
+of the plot) should usually be less than about 0.5$^{\circ}$C.
+
+The second plot (Fig.~\ref{fig:humidity2}) compares the measurements
+to one selected as a reference, here DP\_DPB. The measurements from
+the UV hygrometer are shown in this plot in small transparent symbols
+to avoid complete obscuration of DP\_DPT. The overshoot problem appears
+in this plot in the extension to high dew point, above 15$^{\circ}$C,
+values that appear unrealistic and are above anything measured by
+the UV hygrometer. The differing rates of recovery of these two sensors
+lead to the rectangular pattern of blue dots in this plot becayse
+DP\_DPT recovers earlier than DP\_DPB. The departure from the $\pm1^{\circ}$C
+error band at high level is not meaningful and not a concern because
+both sensors are malfunctioning here. Other related errors where the
+dew-point sensors are slow to respond may result in horizontal lines
+like those for DPy=-5 and -8 in this plot. This is fairly typical
+behavior for the dew-point sensors on the C-130. 
+
+Figure \ref{fig:humidity3} shows the cavity pressures in the dew-point
+hygrometers. These are typically close to the ambient pressure (within
+about 10 hPa) and slightly above PSFC, as for this case. They are
+not necessarily the same because the sensors are oriented slightly
+differently, but departure from the behavior shown may indicate that
+the entrance holes are plugged or the pressure sensors are malfunctioning.
+
+The final humidity plot, Fig.~\ref{fig:humidity4}, shows the history
+of water vapor pressure, mixing ratio, and relative humidity. Excursions
+above relative humidity of 100\% should be rare except in over-heating
+events like that near 20:00. The dashed cyan line in the top segment
+of this plot shows the water vapor pressure that corresponds to equilibrium
+at the air temperature measured by ATX. In the top two plots, the
+traces will usually overlap at the plot resolution for normal operation.
+In this case, the perfect overlap between MR and MR\_UVH is false
+because MR\_UVH was calculated with erroneous dependence on EWX instead
+of EW\_UVH.\vfill\eject
+
+\paragraph{Ambient or static pressure: }
+<<static-pressure, fig.cap=RPlot6Cap, fig.height=5>>=
 if (testPlot (6)) {RPlot6 (DataV)}
+@
+Figure \ref{fig:static-pressure} compares the redundant measurements
+of ambient pressure, uncorrected (top panel) and corrected. The estimated
+uncertainty in pressure measurements is about 0.3 hPa, so PSFDC and
+PSFC (the redundant pressure measurements after correction) should
+agree to within about this tolerance.%
+\footnote{In this example from FRAPPE flight 9, the differences are well outside
+that tolerance and indicate a problem.%
+} A somewhat larger but still 1--2 hPa difference may be present for
+PS\_A; the LAMS calibration consistently indicated a small error in
+that measurement. The difference between mean PSFC and PSFDC, the
+corrected measurements, should be less than about 0.3\,hPa when all
+systems are working properly. The uncorrected measurements (top panel)
+are expected to differ because correction for different static defects
+are applied to different sensors. Therefore a better indicator of
+problems is departure from the typical offset shown here.\vfill\eject
 
-
-## ----dynamic-pressure, fig.cap=RPlot7Cap, fig.height=5-------------------
+<<dynamic-pressure, fig.cap=RPlot7Cap, fig.height=5>>=
 if (testPlot (7)) {RPlot7 (DataV)}
+@
 
 
-## ----total-pressure, fig.cap=RPlot8Cap, fig.height=5---------------------
+\paragraph{Dynamic pressure:}
+
+Measurements of dynamic pressure, similar to those from the ambient
+pressure, are shown in Fig.~\ref{fig:dynamic-pressure1}. The uncertainty
+in these measurements should be about 0.3 hPa, so the redundant sets
+QCFC and QCFRC (bottom panel) should agree within about this tolerance.
+As for PSFD and PSFRD, an offset is expected but that offset should
+remain consistent. Any significant change should be an indicator of
+a problem.%
+\footnote{In this case, FRAPPE flight 9, the difference in the bottom panel
+(1.0 hPa) is outside expectations and indicates some problem with
+either QCFC or QCFRC.%
+} An additional plot, Fig.~\ref{fig:dynamic-pressure2}, shows two
+measurements dependent on the dynamic-pressure measurements, TAS and
+MACH. Only one TASF is available from the pair of measurements QCF
+and QCFR, so these aren't compared here, but TASR and TAS\_A are redundant
+measurements that, although of lower quality compared to TASF, should
+remain without about a hPa of it. \vfill\eject
+
+<<total-pressure, fig.cap=RPlot8Cap, fig.height=5>>=
 if (testPlot (8)) {RPlot8 (DataV)}
+@
 
 
-## ----wind, fig.cap=c(RPlot9Cap1, RPlot9Cap2), fig.height=5.3-------------
+\paragraph{Total pressure:}
+
+Adding the measurements of dynamic and ambient pressure gives the
+total pressure measured at the input of a pitot tube. Two independent
+systems provide this measurement on the C-130, and the avionics system
+provides a third measurement. These are compared in Fig.~\ref{fig:total-pressure}.
+The difference between research-system measurements in the bottom
+panel should be mostly less than 0.2 hPa and, on average, less than
+0.1 hPa, as is true of the measurements used for this plot. \vfill\eject
+
+<<wind, fig.cap=c(RPlot9Cap1, RPlot9Cap2), fig.height=5.3>>=
 if (testPlot (9)) {RPlot9 (DataV)}
+@
 
 
-## ----schuler-oscillation, fig.cap=RPlot10Cap, fig.height=5---------------
+\paragraph{Wind:}
+
+The measurements of horizontal and vertical wind are shown in Fig.~\ref{fig:wind1},
+and also in terms of easterly and southerly components in Fig.~\ref{fig:wind2}.
+Mean vertical wind averaged over the full flight should be close to
+zero, usually with absolute magnitude less than 0.3\,m/s. The horizontal
+wind measurements can be used to check for reasonable continuity without
+excessive noise, although when the wind speed is weak there may be
+substantial noise in the WDC measurements. Wrap-around from 0 to 360
+causes vertical lines in this plot that can be more frequent when
+the wind direction is near 0 or 360. For this reason, the second plot,
+showing easterly and southerly components, can be a better indicator
+of continuity.%
+\footnote{The components are calculated from WDC and WSC. When UXC and VYC were
+used, results were significantly different although these should be
+the same components. Calculation of these variables needs to be checked.%
+}
+\vfill\eject
+
+<<schuler-oscillation, fig.cap=RPlot10Cap, fig.height=5>>=
 if (testPlot (10)) {RPlot10 (DataV)}
+@
 
 
-## ----attack-sideslip, fig.cap=RPlot11Cap, fig.height=5-------------------
+\paragraph{Schuler oscillation:}
+
+The IRU measurements of ground speed will usually have some error
+that varies in a Schuler oscillation with a period of about 84 min.
+The magnitude of this oscillation is usually less than a few m/s,
+and in the wind calculations this oscillation is removed by adjustment
+to the GPS measurements, but excessive amplitude or unexpectedly noisy
+measurements can indicate a problem worth investigating. Figure \ref{fig:schuler-oscillation}
+shows the difference between ground-speed measurements from the IRU
+and the GPS and will usually show an oscillation similar to that in
+this example. The lowest panel in this plot shows the value of GGQUAL,
+which will be 5 for OmniStar reception from the Novatel GPS receiver,
+indicating highest-quality measurements.\vfill\eject
+
+
+\paragraph{Angles of attack and sideslip:}
+
+<<attack-sideslip, fig.cap=RPlot11Cap, fig.height=5>>=
 if (testPlot (11)) {RPlot11 (DataV)}
+@
+The sensitivity coefficients relating pressure differences on the
+radome to angle of attack and sideslip have been described in a separate
+memo (\href{https://drive.google.com/open?id=0B1kIUH45ca5AVFlKeHpWVG5Ed1U&authuser=0}{FRAPPEprocessing.pdf}).
+That calibration used reference values of attack and sideslip (here
+plotted as AOAREF and SSREF) that would be valid measures of the angles
+of attack and sideslip if there were respectively zero vertical wind
+and zero sideways wind gust.
 
 
-## ----iru-comparisons, fig.cap=RPlot12Cap---------------------------------
+Figure \ref{fig:attack-sideslip} shows a comparison of the measurements
+to the reference values. If the calibration is valid, the blue and
+red traces in the top plot and the blue and green traces in the bottom
+plot should match in the mean, with occasional fluctuations caused
+by real wind gusts. PITCH is also shown in the top plot because, in
+the absence of both vertical wind and aircraft climb or descent, the
+pitch would match the angle of attack. For the C-130, the usual angle
+of attack is about $2\pm1^{\circ}$, so these limits are denoted on
+the top panel. Notice the gradual decrease in angle of attack during
+the course of the flight; this is normal behavior as the weight of
+the aircraft decreases. Plots like these are good indications that
+the radome calibration is valid. This is useful to monitor because
+there have been some unexplained changes in C-130 radome behavior,
+perhaps from changes in mounting alignment or from flow interference
+from small accretions of dirt near the radome ports.
+
+
+\paragraph{Aircraft attitude angles: pitch, roll, heading}
+
+<<iru-comparisons, fig.cap=RPlot12Cap>>=
 if (testPlot (12)) {RPlot12 (DataV)}
+@
+
+The research IRUs provide redundant measurements of the attitude angles,
+so comparing them tests if they remain consistent. They should agree
+to within about 0.05$^{\circ}$ except for possible errors in alignment
+when the units are installed in the aircraft.
+
+Figure \ref{fig:iru-comparisons} shows the measurements from the
+two inertial systems and also a magnified (red) plot of the differences
+between the two units (IRS1 value minus IRS2 value). Dashed red lines
+show the expected tolerances for these magnified differences. For
+pitch, typical values are about 2$^{\circ}$ as expected and the offset
+is about 0.03$^{\circ}$ between the two systems. Because this is
+so steady for this flight, it is probably an indication of a real
+difference in alignment, which should be considered if the primary
+unit used for wind calculations is changed. For roll, the mean difference
+is near zero. No average value is shown for the heading offset because
+the average is dominated by occasional large positive excursions,
+producing a large positive mean even though it appears that the baseline
+is about -0.25$^{\circ}$as indicated by the dashed green line. This
+offset likely arises from misalignment to this extent on installation.
+When monitoring these measurements, consistency of these offsets is
+the primary criterion to use; the magnitude of the heading offset,
+for example, is not a problem unless it become necessary to use the
+alternate IRU in wind measurements.\vfill\eject
 
 
-## ----iru-acins, fig.cap=RPlot13Cap, fig.height=5-------------------------
+\paragraph{Vertical acceleration, vertical velocity of the aircraft, and aircraft
+altitude}
+
+<<iru-acins, fig.cap=RPlot13Cap, fig.height=5>>=
 if (testPlot (13)) {RPlot13 (DataV)}
+@
+
+Figure \ref{fig:iru-acins} provides additional information on the
+performance of the INS and GPS systems. The top panel shows a comparison
+of the measurements of vertical acceleration; these should match to
+strict tolerance because the acceleration is integrated twice to get
+the altitude. The difference, shown here as -0.002, should be less
+than about 0.01 in magnitude for normal good operation of the inertial
+units. This does not have to be exactly zero because the data used
+are qualified to have TASX > 60, so some brief periods near the start
+and end of flights can be omitted. The middle panel shows the vertical
+speed of the aircraft as measured by three independent systems. All
+are in good agreement, and the flight-mean values are <0.001 and -0.006\,m/s
+respectively for the inertial and GPS-Novatel units. The mean velocity
+should be very close to zero for a flight that takes off and lands
+at the same airport. The bottom panel will normally show the four
+traces from independent systems overlapping so much as to be indistinguishable.
+In this case, there are occasional spikes in the altitude from the
+Novatel GPS that indicate a problem needing investigation.\vfill\eject
 
 
-## ----uhsas---------------------------------------------------------------
+\paragraph{UHSAS}
+
+<<uhsas>>=
 #if (testPlot (14)) {RPlot14 (DataV)}
+@
+
+The UHSAS was not operated on FRAPPE so this section will need to
+be provided once measurements from WINTER are available.
 
 
-## ----cn-fssp, fig.cap=RPlot15Cap, fig.width=6.5, fig.height=7------------
+\paragraph{CN, PCASP, FSSP, CDP, FSSP300 concentrations}
+
+<<cn-fssp, fig.cap=RPlot15Cap, fig.width=6.5, fig.height=7>>=
 if (testPlot (15)) {RPlot15 (DataV)}
+@
+
+The plots in this section show measurements from particle and hydrometeor
+distrometers on the C-130. The top panel of the first figure, Fig.~\ref{fig:cn-fssp},
+shows CN counts and the CN concentration determined from them, as
+well as the concentration from the PCASP. The bottom panel shows concentrations
+from the CDP, FSSP, and FSSP300. The apparent floor on the plot of
+CDP concentration arises because that is the threshold for a single
+droplet counted in the 1-s interval used for these measurements. Zero
+values are reset to missing for these log plots. The FSSP300 measures
+higher concentrations than the CDP because it extends to a much small
+size and therefore is sensitive to some large aerosol particles. In
+this case, there seems to be a significant difference between CDP
+and FSSP, with the FSSP measuring concentrations orders of magnitude
+smaller than those from the CDP. This is an indication of a problem,
+most likely with the FSSP. The CDP particle counts reduce in concentration
+significantly for the high-level flight segment following 19:00. Except
+for the FSSP, these are all reasonable-looking measurements. One useful
+check is to look for correlation among these measurements, as is clearly
+present here for the top-panel aerosol measurements. The 2DC concentration
+should remain zero in cases of flight outside cloud, as it does except
+for a few brief bursts (light blue lines); a steady concentration
+above zero in clear air may indicate a problem with the uniform illumination
+of diodes or a bad diode in the instrument.
+
+\vfill\eject
 
 
-## ----dbar-plwc, fig.cap=RPlot16Cap---------------------------------------
+\paragraph{Mean diameters and liquid water content of hydrometeors}
+
+<<dbar-plwc, fig.cap=RPlot16Cap>>=
 if (testPlot (16)) {RPlot16 (DataV)}
+@
+
+Measurements of mean diameter and liquid water content at low levels
+can be quite noisy and therefore hard to interpret, so the plots in
+this section have been smoothed over running periods of 61 s using
+cubic Savitzky-Golay polynomials. That led to much smoother plots
+that are easier to interpret, as shown in Fig.~\ref{fig:dbar-plwc1},
+but at the expense of losing fine resolution in cases of short passage
+through clouds. For that reason, this plot and the others in this
+section are likely only useful for data-quality review, not for analysis
+conclusions.
+
+The mean diameter shown in the top panel of Fig.~\ref{fig:dbar-plwc1}
+shows that the CDP and FSSP are only measuring particles in small
+channels, although the FSSP is barely responding while the CDP produces
+a suspicious-looking steady mean arount 5 $\mu$m diameter except
+in the region near 19:330 where the aircraft flew near 20,000 ft altitude.
+There were brief spikes in all measured mean diameters, including
+that from the 2DC but excluding the PCASP, just before the descent
+from this altitude, likely from ice that shattered to produce spurious
+measurements in the droplet and particle spectrometers. This plot
+seems to display normal behavior except for two related problems,
+the large disagreement in mean diameter between the CDP and FSSP and
+the absence of measurable concentrations from the FSSP that prevents
+meaningful estimation of the mean diameter.
+
+The same smoothing is applied to the liquid water content measurements
+shown in the top panel of Fig.~\ref{fig:dbar-plwc2}. In the plotted
+case, there is too little liquid water content to conclude much except
+that the measurements properly show very small values, with a suspicious
+offset in the variable PLWCC that may indicate poor removal of the
+zero value resulting from concentrations above the threshold CDP concentration
+for calculating the offset. For a case like this, it is worth checking
+on the offset in use for the King probe zero adjustment. The middle
+panel in this figure shows the power used by the King probe. This
+should remain steady during the project unless probe elements are
+changed. The guidelines on this plot can help detect departures from
+normal operation. Finally, the bottom panel shows the liquid water
+content deduced from the 2DC probe. Here it is appropriately quiet
+outside a few brief passes through cloud elements.
+
+For monitoring purposes, Fig.~\ref{fig:dbar-plwc3} shows some measurements
+characterizing the operation of the FSSP. The instrument rejects droplets
+for two reasons, either because it estimates they are outside the
+depth of field or because their transit time is shorter than the average
+and can indicate passage through the edges of the beam. The displayed
+results are too noisy and the probe was apparently not working properly,
+so better examples may be obtained from the WINTER test flights and
+this section will be updated then.\vfill\eject
 
 
-## ----skewt-all, fig.cap=RPlot17Cap, fig.height=5, warning=FALSE----------
+\paragraph{Plots on a thermodynamic (skew-T) diagram}
+
+<<skewt-all, fig.cap=RPlot17Cap, fig.height=5, warning=FALSE>>=
 if (testPlot (17)) {RPlot17 (DataV)}
+@
 
+Skew-T diagrams can indicate problems if they show regions where the
+temperature decreases with altitude faster than expected for parcel
+ascent, and they can also indicate layers of strong stability where
+boundary-layer pollution may be trapped. They can also indicate the
+potential for the development of clouds and the potential for severe
+weather. A skew-T plot is included here (Fig.~\ref{fig:skewt-all}
+for information and context, but as long as the appearance remembles
+this plot it will probably not add to the quality-control information.
+There is also a section of this program, suppressed in the project
+configuration, that searches for climbs and descents and constructs
+separate plots for them. Include 18 in the sequence named 'nplots'
+to see these individual plots. They are suppressed in this memo. \vfill\eject
 
-## ----skewt-climb-descent, fig.cap=RPlot18Cap, fig.height=7, fig.width=6----
+<<skewt-climb-descent, fig.cap=RPlot18Cap, fig.height=7, fig.width=6>>=
 if (testPlot (18)) {RPlot18 (DataV)}
+@
 
 
-## ----potential-temperatures, fig.cap=RPlot19Cap, fig.height=5------------
+\paragraph{Potential temperature profiles}
+
+<<potential-temperatures, fig.cap=RPlot19Cap, fig.height=5>>=
 if (testPlot (19)) {RPlot19 (DataV)}
+@
+
+Figure \ref{fig:potential-temperatures1} shows the history of measurements
+of various potential temperatures during the flight, and Fig.~\ref{fig:potential-temperatures2}
+shows the same measurements in vertical profile. The latter can be
+useful because it is expected that potential temperature (THETA or
+THETAV) will normally decrease or remain steady as the altitude increases,
+and uniform regions indicate possible well-mixed regions such as the
+Earth's boundary layer, often capped by modest stability reflected
+in increasing THETA. These profiles often will show multiple lines
+because all individual measurements are plotted in connected lines,
+so for example there may be one plot for ascent and one for descent.
+Much more can be deduced by using profiles like these, but for the
+purposes of data review the best test is to expect plots resembling
+these and investigate departures. For example, in these plots there
+are right-ward excursions near 800 hPa that originate from overheating
+of the dew-point sensors. Features like these should be investigated
+if they haven't been understood from the preceding plots.\vfill\eject
 
 
-## ----droplet-size-distributions, fig.cap=RPlot20Cap, fig.height=5--------
+\paragraph{Hydrometeor size distributions}
+
+<<droplet-size-distributions, fig.cap=RPlot20Cap, fig.height=5>>=
 if (testPlot (20)) {RPlot20 (DataV)}
+@
+
+Size distributions measured by the CDP and SPP100 (FSSP) are shown
+in the next set of plots beginning with Fig.~\ref{fig:droplet-size-distributions1}.
+Individual plots show measurements made over 1-s, as labeled at the
+top of the plots, and plots are only generated when at least one channel
+in the CDP measures a concentration of more than 1 cm$^{-3}$. Once
+three pages of plots are generated, the plotting is suppressed, so
+this only provides an initial limited sample. \vfill\eject
+
+<<speed-run-search, eval=FALSE>>=
+
+SpeedRunSearch (DataV)
+if (SavePlotsToFiles) {
+  dev.off()
+  system (sprintf ("evince %s", plotfile))
+}
+
+@
 
 
-## ----speed-run-search, eval=FALSE----------------------------------------
-## 
-## SpeedRunSearch (DataV)
-## if (SavePlotsToFiles) {
-##   dev.off()
-##   system (sprintf ("evince %s", plotfile))
-## }
-## 
+\section{How to add new plots}
 
+Here is the procedure for adding a plot to this routine:
+\begin{enumerate}
+\item Copy this code and insert it at the end of Review.R:\\
+<<model-addition, echo=TRUE, eval=FALSE>>=
+### This is a model for adding a function:
+RPlotN <- function(data) {
+  # next just resets geometry, in case previous plot used multiple panes
+  op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1)
+  ## simplest plot: variables "Var1" and "Var2" vs time
+  plotWAC (data[, c("Time", "Var1", "Var2"), ylab="Var"]  
+}
+@
+\item Change N in the name RPlotN to some number not in use. The present
+version uses 1--20, so a good choice might be to use 100; i.e., RPlotN
+should be replaced by RPlot100 or some other number that it is unlikely
+anyone else will use.
+\item Make sure that the needed variables are in ``VarList''. If not,
+add them in the statement where VarList is defined, or alternately
+follow that statement (immediately below) with this statement: VarList
+<- c(VarList, \textquotedbl{}Var1\textquotedbl{}, \textquotedbl{}Var2\textquotedbl{})
+where Var1 and Var2 are replaced by the names of variables you want
+to use. They must be in the netCDF file or else this program will
+crash; it is not protected against this error.
+\item Then, follow where the above function definition is inserted with
+this R code:\\
+<<run-model, echo=TRUE, eval=FALSE>>=
+RPlot100 (DataV)   # change '100' to whatever number you have used
+@
+\item You can then make additional modifications to the function as you
+see the results and want to change them. Use the functions RPlot{[}1:20{]}
+in Review.R for ideas of ways to tailor the plots. Also, there are
+some functions available that you may find useful:
 
-## ----model-addition, echo=TRUE, eval=FALSE-------------------------------
-## ### This is a model for adding a function:
-## RPlotN <- function(data) {
-##   # next just resets geometry, in case previous plot used multiple panes
-##   op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1)
-##   ## simplest plot: variables "Var1" and "Var2" vs time
-##   plotWAC (data[, c("Time", "Var1", "Var2"), ylab="Var"]
-## }
+\begin{enumerate}
+\item hline (X) will draw a black dashed horizontal line on the plot at
+ordinate value X.
+\item SmoothInterp (X) will return a smoothed version of X (which might
+be a variable like data\$TASX) as referenced in your routine). Usage:
+Xsmoothed <- SmoothInterp (X).
+\end{enumerate}
+\item Finally, please write a description of how to interpret the new plot
+and what to look for when reviewing data. Give that to me for incorporation
+into future versions of this memo.
+\end{enumerate}
+\begin{center}
+\textsf{\textcolor{blue}{-- End of Memo --}}
+\par\end{center}
 
+Reproducibility:
 
-## ----run-model, echo=TRUE, eval=FALSE------------------------------------
-## RPlot100 (DataV)   # change '100' to whatever number you have used
-
-
+\begin{tabular}{ll}
+\textsf{\textsc{\textcolor{blue}{Project:}}} & WINTER\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Programs:}}} & \Sexpr{thisFileName}.Rnw, \Sexpr{thisFileName}.R\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Original Data:}}} & /scr/raf\_data/\Sexpr{Project}/\Sexpr{Project}\Sexpr{Flight}.nc --
+for testing\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Git:}}} & https://github.com/WilliamCooper/WINTER.git\tabularnewline
+\end{tabular}
+\end{document}

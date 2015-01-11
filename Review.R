@@ -824,7 +824,6 @@ RPlot20Cap <- "Size distributions measured by the CDP and FSSP, each representin
 
 
 
-
 # this code is for use in Review.R where the text of this memo is not included:
 for (np in 1:2) {
   if (testPlot(np)) {eval(parse(text=sprintf("RPlot%d(Data)", np)))}
@@ -841,7 +840,5 @@ if (SavePlotsToFiles) {
   system (sprintf ("evince %s", plotfile))
 }
  
-
-
 
 

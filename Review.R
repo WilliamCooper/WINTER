@@ -18,7 +18,7 @@ require(ggthemes)
 
 ## ----configuration, include=TRUE-----------------------------------------
 
-SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
+SavePlotsToFiles <- FALSE # if TRUE plots are saved to a file, and not displayed
 nps <- 20
 Flight <- "rf09"
 Project <- "FRAPPE"
@@ -45,16 +45,16 @@ VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
              "CONCF_LPO", "CONCD_LPC", "CONC3_RPO", "CONCN","CONCP_RPI", "CONC1DC_LPI",
              "CORAW_AL", "DBARF_LPO", "DBARD_LPC", "DBAR3_RPO", "DBAR1DC_LPI", "DBARP_RPI",
              "DP_UVH", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
-             "EW_DPT", "EW_UVH", "FCN", "FCNC", "GGALT", "GGALT_GMN", "PALT", 
+             "EW_DPT", "EW_UVH", "FCN", "FCNC", "GGALT", "GGALT_NVTL", "PALT", 
              "ALT", "ALT_A", "ALT_A2", "GGLAT", "GGLON", "GGSPD", "GGQUAL", 
-             "GGVEW", "GGVNS", "GGVEW_GMN", "GGVNS_GMN", "GGVSPD",
+             "GGVEW", "GGVNS", "GGVEW_NVTL", "GGVNS_NVTL", "GGVSPD_NVTL",
              "GSPD", "GSPD_A", "GVEW_A", "GVNS_A", "IWD", "IWS", "WDC", "WSC",
              "LAT", "LON", "LATC", "LONC", "LAT_A", "LON_A", "MACHF", "MACHR",
-             "MACH_A", "MR", "MR_UVH", "PALT_A", "PITCH", "UXC", "VYC",
+             "MACH_A", "MR", "PALT_A", "PITCH", "UXC", "VYC",
              "ROLL", "THDG", "PITCH_IRS2", "ROLL_IRS2", "THDG_IRS2", "PLWC", "PLWCC",
              "PLWCD_LPC", "PLWCF_LPO", "PLWC1DC_LPI", "PSFD", "PSFRD", "PSFDC", "PSFC", 
              "PSXC", "QCF", "QCFC", "QCFR", "QCFRC", "QCR", "QCRC", "QC_A", "PS_A",
-             "REJDOF_LPO", "REJAT_LPO", "RHODT", "RHODT_UVH", "RHUM", "RICE",
+             "REJDOF_LPO", "REJAT_LPO", "RHODT", "RHUM", "RICE",
              "RSTB", "RTHL1", "RTHL2", "RTRL", "RT_A", "THETA", "THETAP",
              "THETAE", "THETAQ", "THETAV", "TKAT", "TRSTB", "TVIR", "VEW",
              "VNS", "VEWC", "VNSC", "VSPD", "VSPD_A", "WIC", "TCNTF_LPO", "FREF_LPO")
@@ -215,12 +215,12 @@ RPlot4 <- function (data) {
 #----------------------------------------------------------------------------
 ### plot 5: humidity
 RPlot5 <- function (data) { 
-  ## needs DP_DPB, DP<DPT, DP_UVH, EW_DPT, EX_UVH, MR, MR_UVH, ATX, 
+  ## needs DP_DPB, DP<DPT, DP_UVH, EW_DPT, EX_UVH, MR, ATX, 
   ## PSFC, CAVP_DPB, CAVP_DPT
   op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1)
   plotWAC (DF <- data[, c("Time", "DP_DPB", "DP_DPT", "DP_UVH", "ATX")], 
            ylab='DPx', lty=c(1,1,2,1), lwd=c(2,1.5,1,3), 
-           legend.position='bottomright', 
+           legend.position='bottomright', ylim=c(-40,20),           
            col=c('blue', 'red', 'darkgreen', 'black'))
   title(sprintf("Means DPB-DPT: %.2f; DPB-UVH: %.2f", 
                 mean (data$DP_DPB-data$DP_DPT, na.rm=TRUE), 
@@ -247,7 +247,7 @@ RPlot5 <- function (data) {
            logxy='y', ylim=c(1e-2, 100))
   lineWAC (data$Time, MurphyKoop (data$ATX, data$PSFC), col='cyan', lty=2)
   title ("cyan line: equilibrium vapor pressure at ATX")
-  plotWAC (data[, c("Time", "MR", "MR_UVH")], ylab="MRy", 
+  plotWAC (data[, c("Time", "MR")], ylab="MRy", 
            logxy='y', ylim=c(0.01, 100))
   op <- par (mar=c(5,4,1,1)+0.1)
   plotWAC (data[, c("Time", "RHUM")], ylab="relative humidity [%]")
@@ -385,12 +385,12 @@ RPlot9 <- function (data) {
 #---------------------------------------------------------------------------
 ### plot 10: Schuler oscillation
 RPlot10 <- function (data) {
-  ## needs GGVEW_GMN, GGVNS_GMN, VEW, VNS, GGQUAL
+  ## needs GGVEW, GGVNS, VEW, VNS, GGQUAL
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,3))
   op <- par (mar=c(2,4,1,1)+0.1)
   DF <- data[, c("Time", "GGVEW", "VEW")]
   DF$DifferenceX50 <- (data$GGVEW-data$VEW)*50
-  DF$GGVEW_GMN <- data$GGVEW_GMN
+  DF$GGVEW <- data$GGVEW
   line.colors=c('blue', 'darkorange', 'red', 'skyblue')
   line.widths <- c(1,1,1)
   line.types <- c(1, 9, 1, 2)
@@ -400,7 +400,7 @@ RPlot10 <- function (data) {
           box.col='red', text.col='red', cex=0.5)
   DF <- data[, c("Time", "GGVNS", "VNS")]
   DF$DifferenceX50 <- (data$GGVNS-data$VNS)*50
-  DF$GGVNS_GMN <- data$GGVNS_GMN
+  DF$GGVNS <- data$GGVNS
   plotWAC(DF, col=line.colors, lwd=line.widths, lty=line.types)
   hline (50, 'red'); hline (-50, 'red')
   legend ("bottomleft", legend="dashed-red: +/- 1 m/s, Difference", 
@@ -485,17 +485,17 @@ RPlot12 <- function (data) {
 #----------------------------------------------------------------------------
 ### plot 13: IRU continued, ACINS, VSPD
 RPlot13 <- function (data) {
-  ## needs ACINS, ACINS_IRS2, FSPD, FSPD_A, GGVSPD, GGALT, GGALT_GMN, ALT_A, ALT_A2
+  ## needs ACINS, ACINS_IRS2, FSPD, FSPD_A, GGVSPD_NVTL, GGALT, GGALT, ALT_A, ALT_A2
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
   op <- par (mar=c(2,4,1,1)+0.1)
   DF <- data[, c("Time", "ACINS", "ACINS_IRS2")]
   plotWAC (DF, ylab="ACINS")
   title (sprintf ("mean vertical acceleration: %.3f", mean (data$ACINS, na.rm=TRUE)))
-  plotWAC (data[, c("Time", "VSPD", "VSPD_A", "GGVSPD")])
+  plotWAC (data[, c("Time", "VSPD", "VSPD_A", "GGVSPD_NVTL")])
   title (sprintf ("mean vertical velocity: %.3f (IRS) and %.3f (GPS)",
-                  mean (data$VSPD, na.rm=TRUE), mean (data$GGVSPD, na.rm=TRUE)))
+                  mean (data$VSPD, na.rm=TRUE), mean (data$GGVSPD_NVTL, na.rm=TRUE)))
   op <- par (mar=c(5,4,1,1)+0.1)
-  plotWAC (data[, c("Time", "GGALT", "GGALT_GMN", "ALT_A", "ALT_A2")],
+  plotWAC (data[, c("Time", "GGALT", "GGALT", "ALT_A", "ALT_A2")],
            legend.position = "topright")
 }
 

@@ -20,8 +20,8 @@ require(ggthemes)
 
 SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
 nps <- 20
-Flight <- "rf09"
-Project <- "FRAPPE"
+Flight <- "tf01"
+Project <- "WINTER"
 # x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
 # if (nchar(x) > 1) {Project <- x}
 print(sprintf("Project is %s", Project))
@@ -40,24 +40,24 @@ fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
 print (fname)
 # VarList must include all variable names that are used in this routine
 VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
-             "ATHL2", "ATRL", "AT_A", "AT_A2", "TASF", "TASR", "TAS_A", "TASX","TASHC",
+             "ATHL2", "AT_A", "AT_A2", "TASF", "TASR", "TAS_A", "TASX","TASHC",
              "CAVP_DPT", "CAVP_DPB", "CNTS", "FCN", "FCNC", "ATX", "DPXC",
-             "CONCF_LPO", "CONCD_LPC", "CONC3_RPO", "CONCN","CONCP_RPI", "CONC1DC_LPI",
-             "CORAW_AL", "DBARF_LPO", "DBARD_LPC", "DBAR3_RPO", "DBAR1DC_LPI", "DBARP_RPI",
-             "DP_UVH", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
-             "EW_DPT", "EW_UVH", "FCN", "FCNC", "GGALT", "GGALT_NVTL", "PALT", 
+             "CONCF_LPT", "CONCD_LPC", "CONCN","CONCP_RPT", "CONC1DC_LPB",
+             "CORAW_AL", "DBARF_LPT", "DBARD_LPC", "DBAR1DC_LPB", "DBARP_RPT",
+             "DP_VXL", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
+             "EW_DPT", "EW_VXL", "FCN", "FCNC", "GGALT", "PALT", 
              "ALT", "ALT_A", "ALT_A2", "GGLAT", "GGLON", "GGSPD", "GGQUAL", 
-             "GGVEW", "GGVNS", "GGVEW_NVTL", "GGVNS_NVTL", "GGVSPD_NVTL",
+             "GGVEW", "GGVNS", "GGVSPD",
              "GSPD", "GSPD_A", "GVEW_A", "GVNS_A", "IWD", "IWS", "WDC", "WSC",
              "LAT", "LON", "LATC", "LONC", "LAT_A", "LON_A", "MACHF", "MACHR",
              "MACH_A", "MR", "PALT_A", "PITCH", "UXC", "VYC",
              "ROLL", "THDG", "PITCH_IRS2", "ROLL_IRS2", "THDG_IRS2", "PLWC", "PLWCC",
-             "PLWCD_LPC", "PLWCF_LPO", "PLWC1DC_LPI", "PSFD", "PSFRD", "PSFDC", "PSFC", 
+             "PLWCD_LPC", "PLWCF_LPT", "PLWC1DC_LPB", "PSFD", "PSFRD", "PSFDC", "PSFC", 
              "PSXC", "QCF", "QCFC", "QCFR", "QCFRC", "QCR", "QCRC", "QC_A", "PS_A",
-             "REJDOF_LPO", "REJAT_LPO", "RHODT", "RHUM", "RICE",
-             "RSTB", "RTHL1", "RTHL2", "RTRL", "RT_A", "THETA", "THETAP",
+             "REJDOF_LPT", "REJAT_LPT", "RHODT", "RHUM", "RICE",
+             "RSTB", "RTHL1", "RTHL2", "RT_A", "THETA", "THETAP",
              "THETAE", "THETAQ", "THETAV", "TKAT", "TRSTB", "TVIR", "VEW",
-             "VNS", "VEWC", "VNSC", "VSPD", "VSPD_A", "WIC", "TCNTF_LPO", "FREF_LPO")
+             "VNS", "VEWC", "VNSC", "VSPD", "VSPD_A", "WIC", "TCNTF_LPT", "FREF_LPT")
 Data <- getNetCDF (fname, VarList)
 
 # data: select only points where TASX > 60, and optionally limit time range
@@ -179,8 +179,8 @@ RPlot11Cap <- "Measurements of the angles of attack and sideslip (blue traces, [
 RPlot12Cap <- "Comparison of attitude angles measured by the two duplicate research inertial systems on the C-130, with dashed reference lines indicating the uncertainty limits quoted by the manufacturer for the angle measurements. The red lines show the differences multiplied by 50 for pitch and roll and by 500 for heading, with a further offset of 180$^{\\circ}$ for heading to center the difference plot."
 RPlot13Cap <- "Vertical acceleration (top), vertical aircraft velocity (middle), and aircraft altitude (bottom) for the available redundant measurements."
 RPlot14Cap <- "UHSAS"
-RPlot15Cap <- "Particle concentrations from the CN counter and PCASP aerosol distrometer (top, [cm$^{-3}$) and hydrometeor concentrations from the CDP, SPP100, FSSP300, and 2DC (bottom, [cm$^{-3}$] exc. 2DC [liter${^-1}$], bottom)." 
-RPlot16Cap <- c("Mean diameters [$\\mu$m] measured by the CDP and FSSP (top), the FSSP300 and PCASP (middle), and 2DC [bottom].", 
+RPlot15Cap <- "Particle concentrations from the CN counter and PCASP aerosol distrometer (top, [cm$^{-3}$) and hydrometeor concentrations from the CDP, SPP100, and 2DC (bottom, [cm$^{-3}$] exc. 2DC [liter${^-1}$], bottom)." 
+RPlot16Cap <- c("Mean diameters [$\\mu$m] measured by the CDP and FSSP (top), the PCASP (middle), and 2DC [bottom].", 
                 "Measurements of liquid water content from the SPP100, CDP, and King probe (top); the power required to maintain King-probe temperature (middle), and the extimated liquid water content from the 2DC probe with the assumption that all particles are liquid.",
                 "Additional characteristics of the FSSP: percentage of DOF-accepted particles (top), percentage of TOF-accepted particles (middle), and the laser power (bottom).")
 RPlot17Cap <- "Plot of all temperature and pressure measurements, averaged in 5 hPa intervals, for the flight. The only restriction on data is that only measurements where TASX exceeded 60 m/s were used."
@@ -207,7 +207,7 @@ for (np in 3:nps) {
 
 
 
-SpeedRunSearch (DataV)
+#SpeedRunSearch (DataV)
 if (SavePlotsToFiles) {
   dev.off()
   system (sprintf ("evince %s&", plotfile))

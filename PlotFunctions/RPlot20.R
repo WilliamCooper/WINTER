@@ -1,13 +1,13 @@
 ### plot 20: CDP/SP100 size distributions
 RPlot20 <- function (data) {
-  ## needs CCDP_LPC, DS100_LPO; references fname from calling environment
+  ## needs CCDP_LPC, CS100_LPT; references fname from calling environment
   kount = 0
   netCDFfile = open.ncdf(fname)
   CCDP <- get.var.ncdf(netCDFfile, "CCDP_LPC")
-  CFSSP <- get.var.ncdf (netCDFfile, "CS100_LPO")
+  CFSSP <- get.var.ncdf (netCDFfile, "CS100_LPT")
   CellSizes <- att.get.ncdf (netCDFfile, "CCDP_LPC", "CellSizes")
   CellLimitsD <- CellSizes$value
-  CellSizes <- att.get.ncdf (netCDFfile, "CS100_LPO", "CellSizes")
+  CellSizes <- att.get.ncdf (netCDFfile, "CS100_LPT", "CellSizes")
   CellLimitsF <- CellSizes$value
   layout(matrix(1:6, ncol = 2), widths = c(5,5), heights = c(5,5,6))
   op <- par (mar=c(2,2,1,1)+0.1)

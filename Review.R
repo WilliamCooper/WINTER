@@ -39,29 +39,6 @@ print (nplots)
 fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
 print (fname)
 # VarList must include all variable names that are used in this routine
-# VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
-#              "ATHL2", "AT_A", "AT_A2", "TASF", "TASR", "TAS_A", "TASX","TASHC",
-#              "CAVP_DPT", "CAVP_DPB", "CNTS", "FCN", "FCNC", "ATX", "DPXC",
-#              "CONCF_LPT", "CONCD_LPC", "CONCN","CONCP_RPT", "CONC1DC_LPB",
-#              "CORAW_AL", "DBARF_LPT", "DBARD_LPC", "DBAR1DC_LPB", "DBARP_RPT",
-#              "DP_VXL", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
-#              "EW_DPT", "EW_VXL", "FCN", "FCNC", "GGALT", "PALT", 
-#              "ALT", "ALT_A", "ALT_A2", "GGLAT", "GGLON", "GGSPD", "GGQUAL", 
-#              "GGVEW", "GGVNS", "GGVSPD", "TASFR", "MACHFR", "LSRINT_VXL",
-#              "GSPD", "GSPD_A", "GVEW_A", "GVNS_A", "IWD", "IWS", "WDC", "WSC",
-#              "LAT", "LON", "LATC", "LONC", "LAT_A", "LON_A", "MACHF", "MACHR",
-#              "MACH_A", "MR", "PALT_A", "PITCH", "UXC", "VYC",
-#              "ROLL", "THDG", "PITCH_IRS2", "ROLL_IRS2", "THDG_IRS2", "PLWC", "PLWCC",
-#              "PLWCD_LPC", "PLWCF_LPT", "PLWC1DC_LPB", "PSFD", "PSFRD", "PSFDC", "PSFC", 
-#              "PSXC", "QCF", "QCFC", "QCFR", "QCFRC", "QCR", "QCRC", "QC_A", "PS_A",
-#              "REJDOF_LPT", "REJAT_LPT", "RHODT", "RHUM", "RICE",
-#              "CONCU_RPC", "CONCU100_RPC", "CONCU500_RPC", "USMPFLW_RPC", 
-#              "USHFLW_RPC", "FCNC", "XICNC", "PFLWC_RPT", "UREF_RPC", 
-#              "USCAT_RPC", "PREF_RPT",
-#              "RSTB", "RSTB1", "RSTT", "RTHL1", "RTHL2", "RT_A", "THETA", "THETAP",
-#              "THETAE", "THETAQ", "THETAV", "TKAT", "TRSTB", "TVIR", "VEW",
-#              "VNS", "VEWC", "VNSC", "VSPD", "VSPD_A", "WIC", "TCNTF_LPT", "FREF_LPT")
-
 ## VarList is a file that contains all the variables needed. It loads
 ## 'VarList' as a vector of those names. Add new names to that file.
 source("~/RStudio/WINTER/VarList")

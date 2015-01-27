@@ -4,7 +4,7 @@
 library(knitr)
 opts_chunk$set(echo=FALSE, include=TRUE, fig.lp="fig:")
 opts_chunk$set(fig.width=5.5, fig.height=7, fig.align="center", 
-               digits=4, fig.show="asis")
+               digits=4, fig.show="asis", fig.path="Figures/WR-")
 thisFileName <- "Review"
 require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
 require(maps, quietly=TRUE)
@@ -20,7 +20,7 @@ require(ggthemes)
 
 SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
 nps <- 22
-Flight <- "tf01"
+Flight <- "tf02"
 Project <- "WINTER"
 # x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
 # if (nchar(x) > 1) {Project <- x}
@@ -29,7 +29,7 @@ x <- readline(sprintf("Flight is %s; CR to accept or enter new flight name (rfxx
                       Flight))
 if (nchar(x) > 1) {Flight <- x}
 print(sprintf("Flight is %s", Flight))
-nplots=c(1, 3:17, 19:np)
+nplots=c(1, 3:17, 19:nps)
 print ("Plots desired: CR to accept, or enter new spec")
 x <- readline ("new spec: (0 => all, -1 => project set, n => plot n, can be a sequence): ")
 if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
@@ -39,28 +39,32 @@ print (nplots)
 fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
 print (fname)
 # VarList must include all variable names that are used in this routine
-VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
-             "ATHL2", "AT_A", "AT_A2", "TASF", "TASR", "TAS_A", "TASX","TASHC",
-             "CAVP_DPT", "CAVP_DPB", "CNTS", "FCN", "FCNC", "ATX", "DPXC",
-             "CONCF_LPT", "CONCD_LPC", "CONCN","CONCP_RPT", "CONC1DC_LPB",
-             "CORAW_AL", "DBARF_LPT", "DBARD_LPC", "DBAR1DC_LPB", "DBARP_RPT",
-             "DP_VXL", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
-             "EW_DPT", "EW_VXL", "FCN", "FCNC", "GGALT", "PALT", 
-             "ALT", "ALT_A", "ALT_A2", "GGLAT", "GGLON", "GGSPD", "GGQUAL", 
-             "GGVEW", "GGVNS", "GGVSPD", "TASFR", "MACHFR", "LSRINT_VXL",
-             "GSPD", "GSPD_A", "GVEW_A", "GVNS_A", "IWD", "IWS", "WDC", "WSC",
-             "LAT", "LON", "LATC", "LONC", "LAT_A", "LON_A", "MACHF", "MACHR",
-             "MACH_A", "MR", "PALT_A", "PITCH", "UXC", "VYC",
-             "ROLL", "THDG", "PITCH_IRS2", "ROLL_IRS2", "THDG_IRS2", "PLWC", "PLWCC",
-             "PLWCD_LPC", "PLWCF_LPT", "PLWC1DC_LPB", "PSFD", "PSFRD", "PSFDC", "PSFC", 
-             "PSXC", "QCF", "QCFC", "QCFR", "QCFRC", "QCR", "QCRC", "QC_A", "PS_A",
-             "REJDOF_LPT", "REJAT_LPT", "RHODT", "RHUM", "RICE",
-             "CONCU_RPC", "CONCU100_RPC", "CONCU500_RPC", "USMPFLW_RPC", 
-             "USHFLW_RPC", "FCNC", "XICNC", "PFLWC_RPT", "UREF_RPC", 
-             "USCAT_RPC", "PREF_RPT",
-             "RSTB", "RSTB1", "RSTT", "RTHL1", "RTHL2", "RT_A", "THETA", "THETAP",
-             "THETAE", "THETAQ", "THETAV", "TKAT", "TRSTB", "TVIR", "VEW",
-             "VNS", "VEWC", "VNSC", "VSPD", "VSPD_A", "WIC", "TCNTF_LPT", "FREF_LPT")
+# VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
+#              "ATHL2", "AT_A", "AT_A2", "TASF", "TASR", "TAS_A", "TASX","TASHC",
+#              "CAVP_DPT", "CAVP_DPB", "CNTS", "FCN", "FCNC", "ATX", "DPXC",
+#              "CONCF_LPT", "CONCD_LPC", "CONCN","CONCP_RPT", "CONC1DC_LPB",
+#              "CORAW_AL", "DBARF_LPT", "DBARD_LPC", "DBAR1DC_LPB", "DBARP_RPT",
+#              "DP_VXL", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
+#              "EW_DPT", "EW_VXL", "FCN", "FCNC", "GGALT", "PALT", 
+#              "ALT", "ALT_A", "ALT_A2", "GGLAT", "GGLON", "GGSPD", "GGQUAL", 
+#              "GGVEW", "GGVNS", "GGVSPD", "TASFR", "MACHFR", "LSRINT_VXL",
+#              "GSPD", "GSPD_A", "GVEW_A", "GVNS_A", "IWD", "IWS", "WDC", "WSC",
+#              "LAT", "LON", "LATC", "LONC", "LAT_A", "LON_A", "MACHF", "MACHR",
+#              "MACH_A", "MR", "PALT_A", "PITCH", "UXC", "VYC",
+#              "ROLL", "THDG", "PITCH_IRS2", "ROLL_IRS2", "THDG_IRS2", "PLWC", "PLWCC",
+#              "PLWCD_LPC", "PLWCF_LPT", "PLWC1DC_LPB", "PSFD", "PSFRD", "PSFDC", "PSFC", 
+#              "PSXC", "QCF", "QCFC", "QCFR", "QCFRC", "QCR", "QCRC", "QC_A", "PS_A",
+#              "REJDOF_LPT", "REJAT_LPT", "RHODT", "RHUM", "RICE",
+#              "CONCU_RPC", "CONCU100_RPC", "CONCU500_RPC", "USMPFLW_RPC", 
+#              "USHFLW_RPC", "FCNC", "XICNC", "PFLWC_RPT", "UREF_RPC", 
+#              "USCAT_RPC", "PREF_RPT",
+#              "RSTB", "RSTB1", "RSTT", "RTHL1", "RTHL2", "RT_A", "THETA", "THETAP",
+#              "THETAE", "THETAQ", "THETAV", "TKAT", "TRSTB", "TVIR", "VEW",
+#              "VNS", "VEWC", "VNSC", "VSPD", "VSPD_A", "WIC", "TCNTF_LPT", "FREF_LPT")
+
+## VarList is a file that contains all the variables needed. It loads
+## 'VarList' as a vector of those names. Add new names to that file.
+source("~/RStudio/WINTER/VarList")
 Data <- getNetCDF (fname, VarList)
 
 # data: select only points where TASX > 60, and optionally limit time range
@@ -97,6 +101,8 @@ SmoothInterp <- function (x) {
 if (SavePlotsToFiles) {
   plotfile = sprintf("~/RStudio/%s/%s%sPlots.pdf", Project, Project, Flight)
   pdf (file = plotfile)
+  ## enable the next to get individual png files instead of one large pdf
+  #### png (file = sprintf ("./Figures/WINTER%s-%%02d.png", Flight))
   print (sprintf ("plots saved in file %s", plotfile))
 }
 

@@ -21,12 +21,17 @@ RPlot5 <- function (data) {
   legend('bottomright', legend=c("y=DP_DPT", "y=DP_VXL"), 
          pch=20, col=c('blue', tgreen))
   title("dashed orange lines: +/-1C error bands", cex.main=0.8)
-  # DP cavity pressures:
+  # DP cavity pressures and VCSEL laser intensity:
+  layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,5))
+  op <- par (mar=c(2,4,1,2.5)+0.1)
   plotWAC (data[, c("Time", "CAVP_DPT", "CAVP_DPB", "PSFC")], 
            lwd=c(2,1,1), lty=c(1,2,1), ylab='CAVP')
   title (sprintf ("mean above PSFC: %.1f (DPB) and %.1f (DPT)", 
                   mean (data$CAVP_DPB - data$PSFC, na.rm=TRUE),
-                  mean (data$CAVP_DPT - data$PSFC, na.rm=TRUE), cex.main=0.75))
+                  mean (data$CAVP_DPT - data$PSFC, na.rm=TRUE)), cex.main=0.75)
+  op <- par (mar=c(5,4,1,2.5)+0.1)
+  plotWAC (data[, c("Time", "LSRINT_VXL")], ylim=c(0,4000))
+  hline (1000, 'red'); hline (2700, 'red')
   # vapor pressure and mixing ratio
   op <- par (mar=c(2,4,1,1)+0.1)
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))

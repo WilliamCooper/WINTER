@@ -19,7 +19,7 @@ require(ggthemes)
 ## ----configuration, include=TRUE-----------------------------------------
 
 SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
-nps <- 20
+nps <- 22
 Flight <- "tf01"
 Project <- "WINTER"
 # x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
@@ -29,7 +29,7 @@ x <- readline(sprintf("Flight is %s; CR to accept or enter new flight name (rfxx
                       Flight))
 if (nchar(x) > 1) {Flight <- x}
 print(sprintf("Flight is %s", Flight))
-nplots=c(1, 3:17, 19:20)
+nplots=c(1, 3:17, 19:nps)
 print ("Plots desired: CR to accept, or enter new spec")
 x <- readline ("new spec: (0 => all, -1 => project set, n => plot n, can be a sequence): ")
 if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
@@ -47,7 +47,7 @@ VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
              "DP_VXL", "DP_DPB", "DP_DPT", "DPXC", "DVALUE", "EWX", "EW_DPB", 
              "EW_DPT", "EW_VXL", "FCN", "FCNC", "GGALT", "PALT", 
              "ALT", "ALT_A", "ALT_A2", "GGLAT", "GGLON", "GGSPD", "GGQUAL", 
-             "GGVEW", "GGVNS", "GGVSPD",
+             "GGVEW", "GGVNS", "GGVSPD", "TASFR", "MACHFR", "LSRINT_VXL",
              "GSPD", "GSPD_A", "GVEW_A", "GVNS_A", "IWD", "IWS", "WDC", "WSC",
              "LAT", "LON", "LATC", "LONC", "LAT_A", "LON_A", "MACHF", "MACHR",
              "MACH_A", "MR", "PALT_A", "PITCH", "UXC", "VYC",
@@ -55,7 +55,10 @@ VarList <- c("ACINS", "ACINS_IRS2", "ADIFR", "BDIFR", "AKRD", "SSRD", "ATHL1",
              "PLWCD_LPC", "PLWCF_LPT", "PLWC1DC_LPB", "PSFD", "PSFRD", "PSFDC", "PSFC", 
              "PSXC", "QCF", "QCFC", "QCFR", "QCFRC", "QCR", "QCRC", "QC_A", "PS_A",
              "REJDOF_LPT", "REJAT_LPT", "RHODT", "RHUM", "RICE",
-             "RSTB", "RTHL1", "RTHL2", "RT_A", "THETA", "THETAP",
+             "CONCU_RPC", "CONCU100_RPC", "CONCU500_RPC", "USMPFLW_RPC", 
+             "USHFLW_RPC", "FCNC", "XICNC", "PFLWC_RPT", "UREF_RPC", 
+             "USCAT_RPC", "PREF_RPT",
+             "RSTB", "RSTB1", "RSTT", "RTHL1", "RTHL2", "RT_A", "THETA", "THETAP",
              "THETAE", "THETAQ", "THETAV", "TKAT", "TRSTB", "TVIR", "VEW",
              "VNS", "VEWC", "VNSC", "VSPD", "VSPD_A", "WIC", "TCNTF_LPT", "FREF_LPT")
 Data <- getNetCDF (fname, VarList)
@@ -188,7 +191,7 @@ RPlot18Cap <- "Skew-T plot of data from the time interval indicated at the top o
 RPlot19Cap <- c("Measurements of potential and virtual potential temperature (top panel) and of Bolton-formula equivalent potential temperature (THETAE), Davies-Jones pseudoadiabatic potential temperature (THETAP), and wet-equivalent potential temperature (THETAQ). All units are kelvin.", 
                 "Vertical profiles of the same measurements shown in the preceding figure.")
 RPlot20Cap <- "Size distributions measured by the CDP and FSSP, each representing 1-s of measurements." 
-
+RPlot21Cap <- "Radiometric temperatures, RSTB (top panel, surface temperature) and RSTT (bottom panel, sky or cloud base temperature."
 
 ### This section loops through plot functions, first loading them from 'PlotFunctions'
 ### and then running them with the appropriate data.

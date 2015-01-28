@@ -14,25 +14,51 @@ require(ggplot2)
 require(grid)
 require(ggthemes)
 
-
+## if command arguments are supplied, via 'Rscript Review.R "rf01" "-1" then
+## these will over-ride the interactive commands below. Arguments are all strings:
+##  1 Flight (string, e.g., "rf01")
+##  2 plots desired. Project-default is "-1". Can also use "1,3,5" or "1:9,13"
+##  3 ShowPlots: provide any 3rd argument to suppress saving of plots and instead
+##               display them
+##  Possible way to include this is a batch script?
+##  cd ~/RStudio/WINTER; Rscript Review.R rf01 -1
+run.args <- commandArgs (TRUE)
 
 ## ----configuration, include=TRUE-----------------------------------------
 
 SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
+if (length (run.args) > 2) {
+  SavePlotsToFiles <- FALSE
+  x11 ()
+}
+print (sprintf (" length of run.args is %d, SavePlotsToFiles is %d", length (run.args), SavePlotsToFiles))
 nps <- 22
-Flight <- "tf02"
+Flight <- "rf01"
 Project <- "WINTER"
 # x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
 # if (nchar(x) > 1) {Project <- x}
 print(sprintf("Project is %s", Project))
-x <- readline(sprintf("Flight is %s; CR to accept or enter new flight name (rfxx format): ", 
-                      Flight))
-if (nchar(x) > 1) {Flight <- x}
+if (length (run.args) > 0) {
+  Flight <- run.args[1]
+} else {
+  x <- readline(sprintf("Flight is %s; CR to accept or enter new flight name (rfxx format): ", 
+                        Flight))
+  if (nchar(x) > 1) {Flight <- x}
+}
 print(sprintf("Flight is %s", Flight))
-nplots=c(1, 3:17, 19:nps)
-print ("Plots desired: CR to accept, or enter new spec")
-x <- readline ("new spec: (0 => all, -1 => project set, n => plot n, can be a sequence): ")
-if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
+nplots=c(1, 3:17, 19:nps)    # project default
+if (length (run.args) > 1) {
+  if (run.args[2] != "-1") {
+    nplots <- eval (parse (text=paste('c(', run.args[2],')', sep='')))
+  }  # else leave unchanged, using project default
+  if (run.args[2] == "0") {
+    nplots <- 1:nps 
+  } 
+} else {
+  print ("Plots desired: CR to accept, or enter new spec")
+  x <- readline ("new spec: (0 => all, -1 => project set, n => plot n, can be a sequence): ")
+  if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
+}
 print (nplots)
 
 ### get data
@@ -161,6 +187,9 @@ CircleSearch (DataV)
 if (SavePlotsToFiles) {
   dev.off()
   system (sprintf ("evince %s&", plotfile))
+} else {
+  message ("press Enter to dismiss plot and end routine")
+  invisible (readLines ("stdin", n=1))
 }
  
 

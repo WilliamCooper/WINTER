@@ -41,7 +41,7 @@ print (fname)
 # VarList must include all variable names that are used in this routine
 ## VarList is a file that contains all the variables needed. It loads
 ## 'VarList' as a vector of those names. Add new names to that file.
-source("~/RStudio/WINTER/VarList")
+source("./VarList")
 Data <- getNetCDF (fname, VarList)
 
 # data: select only points where TASX > 60, and optionally limit time range
@@ -96,49 +96,11 @@ RPlotn <- function(data) {
 }
 
 #----------------------------------------------------------------------------
-### this section searches for speed runs and other maneuvers
-SpeedRunSearch <- function (data) {
-  ## needs TASX, GGALT
-  del <- 75
-  tol <- .3
-  delz <- 20
-  DataT <- data[!is.na(data$Time) & !is.na(data$TASX), ]
-  r <- 1:length(DataT$GGALT)
-  for (i in (del+1):(length(DataT$GGALT)-del)) {
-    if ((!is.na(DataT$TASX[i]) && abs (DataT$TASX[i+del]-DataT$TASX[i]) < tol*del) ||
-          (abs(DataT$GGALT[i+del]-DataT$GGALT[i]) > delz)) {
-      r[i] <- NA 
-    }
-    if ((abs (DataT$TASX[i-del]-DataT$TASX[i]) > tol*del) &&
-          (abs(DataT$GGALT[i-del]-DataT$GGALT[i]) < delz)) {
-      r[i] <- i
-    }
-  }
-  r[1:del] <- NA
-  L <- length(DataT$GGALT)
-  r[(L-del):L] <- NA
-  s <- r[!is.na(r)]
-  # look for breaks of at least del:
-  # print (sprintf ("start at 1 %d", s[1]))
-  #plot(DataT$Time, DataT$GGALT/100, type='l', col='blue', lwd=1)
-  #lines(DataT$Time[r], DataT$GGALT[r]/100, col='darkorange', lwd=5)
-  startSpeedRun <- 1
-  startTime <- DataT$Time[s[1]]
-  lastSpeedChange <- 0
-  for (j in 1:(length(s)-1)) {
-    if (s[j+1]-s[j] > del) {
-      endTime <- DataT$Time[s[j]]
-      print (sprintf( "Speed run candidate, times: %s--%s", 
-                      strftime(startTime, format="%H%M%S", tz='UTC'),
-                      strftime (endTime, format="%H%M%S", tz='UTC')))
-      startTime <- DataT$Time[s[j+1]]
-    }
-  }
-}
-
-#----------------------------------------------------------------------------
-
-
+### this section loads functions for searches for maneuvers
+source ("./PlotFunctions/SpeedRunSearch.R")
+source ("./PlotFunctions/CircleSearch.R")
+source ("./PlotFunctions/PitchSearch.R")
+source ("./PlotFunctions/YawSearch.R")
 
 ## ----fig-captions--------------------------------------------------------
 
@@ -191,9 +153,11 @@ for (np in 3:nps) {
   }
 }
 
+PitchSearch (DataV)
+YawSearch (DataV)
+SpeedRunSearch (DataV)
+CircleSearch (DataV)
 
-
-#SpeedRunSearch (DataV)
 if (SavePlotsToFiles) {
   dev.off()
   system (sprintf ("evince %s&", plotfile))

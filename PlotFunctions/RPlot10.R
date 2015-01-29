@@ -24,6 +24,6 @@ RPlot10 <- function (data) {
           box.col='red', text.col='red', cex=0.5)
   op <- par (mar=c(5,4,1,2)+0.1)
   DF <- data[, c("Time", "GGQUAL")]
-  plotWAC(DF, ylim=c(0,5))
+  plotWAC(DF, ylim=c(0,10))
 }
 

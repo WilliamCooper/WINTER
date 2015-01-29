@@ -13,6 +13,7 @@ require(mapproj, quietly=TRUE)
 require(ggplot2)
 require(grid)
 require(ggthemes)
+setwd ("~/RStudio/WINTER")
 
 ## if command arguments are supplied, via 'Rscript Review.R "rf01" "-1" then
 ## these will over-ride the interactive commands below. Arguments are all strings:

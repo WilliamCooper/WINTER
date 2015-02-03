@@ -58,7 +58,14 @@ if (length (run.args) > 1) {
 } else {
   print ("Plots desired: CR to accept, or enter new spec")
   x <- readline ("new spec: (0 => all, -1 => project set, n => plot n, can be a sequence): ")
-  if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
+  if (nchar(x) > 0) { 
+    if (x != "-1"){
+      nplots <- eval(parse(text=paste('c(',x,')', sep='')))
+    }  # else leave unchanged, using project default
+    if (x == "0") {
+      nplots <- 1:nps 
+    }
+  }
 }
 print (nplots)
 
@@ -107,7 +114,7 @@ if (SavePlotsToFiles) {
   pdf (file = plotfile)
   ## enable the next to get individual png files instead of one large pdf
   #### png (file = sprintf ("./Figures/WINTER%s-%%02d.png", Flight))
-  print (sprintf ("plots saved in file %s", plotfile))
+  print (sprintf ("saving plots in file %s", plotfile))
 }
 
 #----------------------------------------------------------------------------
@@ -169,12 +176,14 @@ RPlot21Cap <- "Radiometric temperatures, RSTB (top panel, surface temperature) a
 ### and then running them with the appropriate data.
 for (np in 1:2) {
   if (testPlot(np)) {
+    print(paste('running plot',np))
     eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
     eval(parse(text=sprintf("RPlot%d(Data, Flight)", np)))
   }
 }
 for (np in 3:nps) {
   if (testPlot(np)) {
+    print(paste('running plot',np))
     eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
     eval(parse(text=sprintf("RPlot%d(DataV)", np)))
   }
@@ -187,6 +196,7 @@ CircleSearch (DataV)
 
 if (SavePlotsToFiles) {
   dev.off()
+  print (sprintf ("done saving plots in file %s", plotfile))
   system (sprintf ("evince %s&", plotfile))
 } else {
   message ("press Enter to dismiss plot and end routine")

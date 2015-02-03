@@ -1,0 +1,17 @@
+RPlot21 <- function(data) {
+  ## be sure that the variables are in 'VarList'. If not, where VarList
+  ## is defined, add the new variable to the variable names or follow the
+  ## present definition with VarList <- c(VarList, "NewVariable1", "NewVariable2")
+  # next just resets geometry, in case previous plot used multiple panes
+  layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,6))
+  op <- par (mar=c(2,4,1,2.5)+0.1)
+  data$RSTBdif <- data$RSTB-data$RSTB1
+  plotWAC (data[, c("Time", "RSTB", "RSTB1", "RSTBdif")])
+  axis (4, at=c(-2, 0, 2), labels=c(NA, "+/-2", NA), 
+        col='red', col.axis='red')
+  hline (-2, 'red'); hline (2, 'red')
+  title (sprintf ("mean difference RSTB-RSTB1 %.1f", 
+         mean (data$RSTBdif, na.rm=TRUE)), cex.main=0.75)
+  op <- par (mar=c(5,4,1,2.5)+0.1)
+  plotWAC (data[, c("Time", "RSTT")])
+}

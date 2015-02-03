@@ -10,16 +10,22 @@ RPlot5 <- function (data) {
   title(sprintf("Means DPB-DPT: %.2f; DPB-VXL: %.2f", 
                 mean (data$DP_DPB-data$DP_DPT, na.rm=TRUE), 
                 mean (data$DP_DPB-data$DP_VXL, na.rm=TRUE)), cex.main=0.8)
-  plot(DF <- data[, c("DP_DPB", "DP_DPT")], pch=20, col='blue', 
+# BBS 2/2/15 edited to match sensor colors and make VXL the dependent variable
+# also, high transparency was making DPT look better than it actually was
+#  plot(DF <- data[, c("DP_DPT", "DP_VXL")], pch=20, col='blue', 
+  plot(DF <- data[, c("DP_VXL", "DP_DPB")], pch=20, col='blue', 
        ylab=expression (paste ("dew point  DPy  [", degree, "C]")))
   lines (c(-70.,30.), c(-69.,31.), col="darkorange", lwd=2, lty=2)
   lines (c(-70.,30.), c(-71.,29.), col="darkorange", lwd=2, lty=2)
-  DF$DP_DPT <- data$DP_VXL
-  # set high transparency (30) to avoid obscuring DPT by VXL
-  tgreen <- rgb(0,100,0,30,maxColorValue=255)
-  points (DF, pch=20, col=tgreen, cex=0.5)
-  legend('bottomright', legend=c("y=DP_DPT", "y=DP_VXL"), 
-         pch=20, col=c('blue', tgreen))
+  DF$DP_DPB <- data$DP_DPT
+#  # set high transparency (30) to avoid obscuring DPT by VXL
+#  tgreen <- rgb(0,100,0,30,maxColorValue=255)
+#  points (DF, pch=20, col=tgreen, cex=0.5)
+#  legend('bottomright', legend=c("y=DP_DPT", "y=DP_VXL"), 
+#         pch=20, col=c('blue', tgreen))
+  points (DF, pch=20, col='red', cex=0.5)
+  legend('bottomright', legend=c("y=DP_DPB", "y=DP_DPT"), 
+         pch=20, col=c('blue', 'red'))
   title("dashed orange lines: +/-1C error bands", cex.main=0.8)
   # DP cavity pressures and VCSEL laser intensity:
   layout(matrix(1:2, ncol = 1), widths = 1, heights = c(5,5))

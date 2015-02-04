@@ -11,13 +11,28 @@ RPlot30 <- function (data) {
   op <- par (mfrow=c(2,1), mar=c(5,5,2,2)+0.1)
 
   # fix PICARRO time offset
-  #### not presently working because PICARRO time stamp has a problem
+  ## creation of RAF nc file converts TIME_PIC2311 to a single-precision float
+  ## which only 24 bits in the significant, resulting in TIME_PIC2311 going from
+  ## 0.1 sec precision to 128 sec precision (rounding of # around 1.4 billion 
+  ## seconds since 1970-01-01).  For now, estimate this rounding is up from the 
+  ## midpoint and then interpolate (would be better if Teresa could output a 
+  ## different format or Chris coudl create an instrument class to handle this).
+  data$TIME_PICtemp=data$TIME_PIC2311
   data$TIME_PIC2311=as.POSIXlt(data$TIME_PIC2311,origin='1970-01-01',tz='UTC')
-  #temp2=data[,grep("PIC",colnames(data))]
-  #temp2$mrgtime=as.numeric(temp2$TIME_PIC2311,units='secs')
-  #data=data[,grep("PIC",colnames(data),invert=T)]
-  #data$mrgtime=as.numeric(data$Time,units='secs')
-  #data=merge(data,temp2,by="mrgtime",all.x=T)
+  data$timedifforig=difftime(data$TIME_PIC2311,data$Time,units='secs')
+  data$TIME_PICtemp[c(0,diff(data$TIME_PIC2311))==0]=NA
+  data$TIME_PICtemp=data$TIME_PICtemp-64
+  data$TIME_PICtemp=approx(data$Time,data$TIME_PICtemp,data$Time)$y
+  data$TIME_PICtemp=round(data$TIME_PICtemp)
+#  data$TIME_PICtemp=as.POSIXlt(data$TIME_PICtemp,origin='1970-01-01',tz='UTC')
+#  data$TIME_PIC2311=as.POSIXlt(data$TIME_PIC2311,origin='1970-01-01',tz='UTC')
+  datatemp=data[,grep("PIC",colnames(data))]
+#  datatemp$mrgtime=as.numeric(temp2$TIME_PIC2311,units='secs')
+  data=data[,grep("PIC",colnames(data),invert=T)]
+  data$mrgtime=as.numeric(data$Time,units='secs')
+  data$timediffnew=datatemp$TIME_PICtemp-data$mrgtime
+  data=merge(data,datatemp,by.x="mrgtime",by.y='TIME_PICtemp',all.x=T)
+#  data$TIME_PICtemp=as.POSIXlt(data$TIME_PICtemp,origin='1970-01-01',tz='UTC')
   
   # plot raw and corrected CO2 and CH4
   plotWAC (DF <- data[, c("Time", "CO2_PIC2311", "CO2C_PIC2311")], 
@@ -32,6 +47,37 @@ RPlot30 <- function (data) {
            lty=c(1,1), lwd=c(1.5,2), legend.position='top', 
            col=c('dark blue', 'blue'))
   title(expression(paste("Picarro 2311 Dry Air Mole Fraction ",CH[4])), cex.main=0.8)
+
+  # zoom in with reference lines
+  ## pick CO2 reference from
+  ## ftp://aftp.cmdl.noaa.gov/products/trends/co2/co2_mm_mlo.txt and 
+	# 2012  12    2012.958      394.28
+	# 2013   2    2013.125      396.80 
+	# 2013  12    2013.958      396.81
+	# 2014   2    2014.125      397.91
+	# 2014  12    2014.958      398.78
+  ## and https://scripps.ucsd.edu/programs/keelingcurve/
+  co2ref=400
+  ## ftp://ftp.cmdl.noaa.gov/data/greenhouse_gases/ch4/flask/surface/ch4_nwr_surface-flask_1_ccgg_month.txt
+	# NWR 2011  2  1876.64
+	# NWR 2012  2  1877.11
+	# NWR 2013  2  1877.90 
+  ch4ref=1878
+  ## might be able to code up something dynamic based on lat/lon/date from
+  ## http://www.gmes-atmosphere.eu/d/services/gac/nrt/nrt_fields_ghg/
+  # plot raw and corrected CO2 and CH4
+  plotWAC (DF <- data[, c("Time", "CO2C_PIC2311")],
+           ylab=expression (paste (CO[2]," [", mu, "mol/mole]")),
+           lty=c(1,1), lwd=c(1.5,2), legend.position='top',
+           col='red',ylim=co2ref+c(-2.5,2.5))
+  abline(h=co2ref)
+  title(expression(paste("Picarro 2311 Dry Air Mole Fraction ",CO[2])), cex.main=0.8)
+  plotWAC (DF <- data[, c("Time", "CH4C_PIC2311")],
+           ylab=expression (paste (CH[4]," [nmol/mole]")),
+           lty=c(1,1), lwd=c(1.5,2), legend.position='top',
+           col='blue',ylim = ch4ref+c(-25,25))
+  abline(h=ch4ref)
+  title(expression(paste("Picarro 2311 Dry Air Mole Fraction ",CH[4])), cex.main=0.8)
   
   # plot H2O and VXL
   data$H2O_PIC2311=data$H2O_PIC2311*10000
@@ -42,11 +88,11 @@ RPlot30 <- function (data) {
   title(expression(paste("Mole Fraction ",H[2],"O")), cex.main=0.8)
 
   # plot PICARRO time offset
-  data$timediff=difftime(data$TIME_PIC2311,data$Time,units='secs')
-  plotWAC (DF <- data[, c("Time", "timediff")], 
+  plotWAC (DF <- data[, c("Time", "timedifforig")], 
            ylab="seconds",
            lty=c(1,1), lwd=c(1.5,2), legend.position='bottomright', 
            col=c('dark green'))
+  lines(data$Time,data$timediffnew,col='green')
   title("Picarro 2311 Time Offset", cex.main=0.8)
   
     op <- par (mfrow=c(1,1), mar=c(5,5,2,2)+0.1)
@@ -60,6 +106,7 @@ RPlot30 <- function (data) {
   #lines (c(-70.,30.), c(-71.,29.), col="darkorange", lwd=2, lty=2)
   #title("dashed orange lines: +/-1C error bands", cex.main=0.8)
 
+if(T){
   # plot XY of CO2 and CH4 corrections against H2O
   op <- par (mfrow=c(1,1), mar=c(5,5,2,4)+0.1)
   data$co2corr=data$CO2C_PIC2311-data$CO2_PIC2311
@@ -77,10 +124,7 @@ RPlot30 <- function (data) {
   mtext(expression(paste(Delta," nmole/mole")),4,2,col='blue')
   legend('bottomright', legend=c("y=CO2 Corr.", "y=CH4 Corr."), 
          pch=20, col=c('red', 'blue'))
-  
-  
-
-
+} # if(F)
   
 }
 

@@ -33,7 +33,7 @@ if (length (run.args) > 2) {
   x11 ()
 }
 print (sprintf (" length of run.args is %d, SavePlotsToFiles is %d", length (run.args), SavePlotsToFiles))
-nps <- 22
+nps <- 30 
 Flight <- "rf01"
 Project <- "WINTER"
 # x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
@@ -187,7 +187,7 @@ CircleSearch (DataV)
 
 if (SavePlotsToFiles) {
   dev.off()
-  system (sprintf ("evince %s&", plotfile))
+#  system (sprintf ("evince %s&", plotfile))
 } else {
   message ("press Enter to dismiss plot and end routine")
   invisible (readLines ("stdin", n=1))

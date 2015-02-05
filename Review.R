@@ -1,6 +1,8 @@
 
 ## ----initialization,echo=FALSE,include=FALSE-----------------------------
 
+## testing testing 123
+
 library(knitr)
 opts_chunk$set(echo=FALSE, include=TRUE, fig.lp="fig:")
 opts_chunk$set(fig.width=5.5, fig.height=7, fig.align="center", 
@@ -47,7 +49,7 @@ if (length (run.args) > 0) {
   if (nchar(x) > 1) {Flight <- x}
 }
 print(sprintf("Flight is %s", Flight))
-nplots=c(1, 3:17, 19:nps)    # project default
+nplots=c(1, 3:17, 19:nps,30)    # project default
 if (length (run.args) > 1) {
   if (run.args[2] != "-1") {
     nplots <- eval (parse (text=paste('c(', run.args[2],')', sep='')))

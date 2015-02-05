@@ -24,14 +24,14 @@ RPlot22 <- function (data) {
     PCASP <- CPCASP[, j]
     UHSAS[UHSAS <= 0] <- 1e-4
     PCASP[PCASP <= 0] <- 1e-4
-    if ((any(UHSAS > 50, na.rm=TRUE)) && (any(PCASP > 1, na.rm=TRUE))) {
+    if ((any(UHSAS > 50, na.rm=TRUE)) || (any(PCASP > 1, na.rm=TRUE))) {
       kount <- kount + 1
       ifelse ((kount %% 3), op <- par (mar=c(2,2,1,1)+0.1),
               op <- par (mar=c(5.2,2,1,1)+0.1))
       plot (CellLimitsU, UHSAS, type='s', ylim=c(1.e-1,1.e3), 
             xlab="Diameter [um]", log="y", col='blue', lwd=2)
       points (CellLimitsP, PCASP, type='s', col='darkgreen')
-      title(sprintf("UHSAS, Time=%s", strftime (Time[j], format="%H:%M:%S", tz='UTC')), 
+      title(sprintf("size distribution, Time=%s", strftime (Time[j], format="%H:%M:%S", tz='UTC')), 
             cex.main=.75)
       legend ("topright", legend=c("UHSAS", "PCASP"), col=c('blue', 'darkgreen'), 
               lwd=c(2,1), cex=0.75) 

@@ -1,7 +1,7 @@
 ### plot 16: DBAR (mean diameters) and PLWC (liquid water content)
 # do 1-min smoothing; otherwise, too noisy
 RPlot16 <- function (data) {
-  ## needs DBARD_LPC, DBARF_LPT, DBARP_RPT, DBAR1DC_LPB
+  ## needs DBARD_LPC, DBARF_LPT, DBARP_RPT, DBAR1DC_LPB, DBARU_RPC
   ## PLWCF_LPT, PLWCD_LPC, PLWC, PLWCC, PLWC1DC_LPB
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
   # DBAR:
@@ -12,10 +12,11 @@ RPlot16 <- function (data) {
   plotWAC (DF, ylim=c(0,30), ylab="DBAR", legend.position="topright")
   title ("1-min filter", cex.main=0.75)
   #DF <- data[, c("Time", "DBAR3_RPO", "DBARP_RPT")]
-  DF <- data[, c("Time", "DBARP_RPT")]
+  DF <- data[, c("Time", "DBARP_RPT", "DBARU_RPC")]
   #DF$DBAR3_RPO <- SmoothInterp(data$DBAR3_RPO)
   DF$DBARP_RPT <- SmoothInterp(data$DBARP_RPT)
-  plotWAC (DF, ylim=c(0,2), ylab="DBARP", legend.position="topright")
+  DF$DBARU_RPC <- SmoothInterp(data$DBARU_RPU)
+  plotWAC (DF, ylim=c(0,2), ylab="DBARP and DBARU", legend.position="topright")
   title ("1-min filter", cex.main=0.75)
   op <- par (mar=c(5,4,1,1)+0.1)
   DF <- data[, c("Time", "DBAR1DC_LPB")]

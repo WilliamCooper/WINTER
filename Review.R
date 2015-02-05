@@ -74,7 +74,7 @@ Data <- getNetCDF (fname, VarList)
 # data: select only points where TASX > 60, and optionally limit time range
 StartTime <- 0; EndTime <- 0 ## can set start and end times for plot
 DataV <- Data[setRange(Data$Time, StartTime, EndTime), ]
-DataV <- DataV[DataV$TASX > 60, ]
+DataV <- DataV[(!is.na (DataV$TASX)) & (DataV$TASX > 60), ]
 
 #--------------------------------------------------------------------
 # functions used later:
@@ -97,6 +97,8 @@ testPlot <- function (k) {
 }
 
 SmoothInterp <- function (x) {
+  ## skip if there are fewer than 100 measurements
+  if (length (x[!is.na(x)]) < 100) {return (x)}
   d <- zoo::na.approx (as.vector(x), maxgap=100, na.rm = FALSE)
   d[is.na(d)] <- 0
   return (signal::filter(signal::sgolay(3, 61), d))
@@ -174,9 +176,11 @@ for (np in 1:2) {
   }
 }
 for (np in 3:nps) {
-  if (testPlot(np)) {
-    eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
-    eval(parse(text=sprintf("RPlot%d(DataV)", np)))
+  if (file.exists (sprintf ("PlotFunctions/RPlot%d.R", np))) {
+    if (testPlot(np)) {
+      eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
+      eval(parse(text=sprintf("RPlot%d(DataV)", np)))
+    }
   }
 }
 
@@ -187,6 +191,7 @@ CircleSearch (DataV)
 
 if (SavePlotsToFiles) {
   dev.off()
+  print (sprintf ("Plots are ready in file %s", plotfile))
 #  system (sprintf ("evince %s&", plotfile))
 } else {
   message ("press Enter to dismiss plot and end routine")

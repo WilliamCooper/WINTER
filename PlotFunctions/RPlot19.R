@@ -13,7 +13,7 @@ RPlot19 <- function (data) {
   op <- par (mar=c(5,2,1,1)+0.1)
   yl <- c(max (data$PSFC, na.rm=TRUE), min (data$PSFC, na.rm=TRUE))
   plot (data[, c("THETAP", "PSFC")], type='l', col='blue', 
-        xlab='Ad. Pot. T. [K]', ylab='P [hPa]', xlim=c(300,400), ylim=yl)
+        xlab='Ad. Pot. T. [K]', ylab='P [hPa]', xlim=c(250,350), ylim=yl)
   points (data$THETAE, data$PSFC, type='l', col='green')
   points (data$THETAQ, data$PSFC, type='l', col='red')
   legend ("topright", legend=c("THETAP", "THETAE", "THETAQ"), 

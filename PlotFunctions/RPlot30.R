@@ -125,6 +125,23 @@ if(T){
   legend('bottomright', legend=c("y=CO2 Corr.", "y=CH4 Corr."), 
          pch=20, col=c('red', 'blue'))
 } # if(F)
-  
+
+# plot CORAW
+plotWAC (DF <- data[, c("Time", "CORAW_AL")],
+         ylab="ppbv",
+         lty=c(1,1), lwd=c(2), legend.position='bottomright',
+         col='red')
+title("CORAW", cex.main=0.8)
+abline(h=0)
+# plot COFLOW and INLETP
+plot(DF <- data[, c("Time", "COFLOW_AL")], col='red', axes=F,ylab='')
+box();axis(2,col='red',col.ticks='red',col.axis='red')
+mtext("COFLOW",2,2,col='red')
+par(new=T)
+plot(DF <- data[, c("Time","INLETP_AL")], pch=20, col='blue', axes=F,
+     ylab='',xlab='')
+axis(4,col='blue',col.ticks='blue',col.axis='blue')
+mtext("INLETP",4,2,col='blue')
+#legend('bottomright', legend=c("COFLOW", "INLETP"), pch=20, col=c('red', 'blue'))
 }
 

@@ -52,7 +52,6 @@ print(sprintf("Project is %s", Project))
 Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project), 
                         sprintf ("%srf...nc", Project)), decreasing = TRUE)[1]
 Flight <- sub (Project, '',  sub (".nc", '', Fl))
-## print (sprintf ("default flight is %s", Fl))
 
 if (length (run.args) > 0) {
   Flight <- run.args[1]

@@ -34,13 +34,19 @@ if (length (run.args) > 2) {
   SavePlotsToFiles <- FALSE
   x11 ()
 }
-print (sprintf (" length of run.args is %d, SavePlotsToFiles is %d", length (run.args), SavePlotsToFiles))
+print (sprintf (" length of run.args is %d, SavePlotsToFiles is %d", 
+                length (run.args), SavePlotsToFiles))
 nps <- 30 
 Flight <- "rf01"
 Project <- "WINTER"
 # x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
 # if (nchar(x) > 1) {Project <- x}
 print(sprintf("Project is %s", Project))
+## find max rf in data directory, use as default if none supplied via command line:
+Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project), 
+                        sprintf ("%srf...nc", Project)), decreasing = TRUE)[1]
+print (sprintf ("default flight is %s", Fl))
+
 if (length (run.args) > 0) {
   Flight <- run.args[1]
 } else {

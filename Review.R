@@ -125,7 +125,11 @@ SmoothInterp <- function (x) {
 }
 
 if (SavePlotsToFiles) {
-  plotfile = sprintf("~/RStudio/%s/%s%sPlots.pdf", Project, Project, Flight)
+  if (SavePlotsToFiles == 2) {
+    plotfile = sprintf("~/RStudio/%s/%s%sPlotsP.pdf", Project, Project, Flight)
+  } else {
+    plotfile = sprintf("~/RStudio/%s/%s%sPlots.pdf", Project, Project, Flight)
+  }
   pdf (file = plotfile)
   ## enable the next to get individual png files instead of one large pdf
   #### png (file = sprintf ("./Figures/WINTER%s-%%02d.png", Flight))

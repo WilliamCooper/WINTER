@@ -21,26 +21,39 @@ setwd ("~/RStudio/WINTER")
 ## these will over-ride the interactive commands below. Arguments are all strings:
 ##  1 Flight (string, e.g., "rf01")
 ##  2 plots desired. Project-default is "-1". Can also use "1,3,5" or "1:9,13"
-##  3 ShowPlots: provide any 3rd argument to suppress saving of plots and instead
-##               display them
-##  Possible way to include this is a batch script?
+##  3 ShowPlots: 3rd argument 0 suppresses saving; any other entry saves them
+##  4 Start time for the plots, in HHMMSS format. If >240000, use e.g. 250000 for 10000
+##  5 End time for plots, HHMMSS format, as for Start time
+## For example, 'Rscript Review.R rf03 17 0 220000 230000' displays plot 17 for
+## the listed times on an Xwindows screen.
+##  Possible way to include this in a batch script?
 ##  cd ~/RStudio/WINTER; Rscript Review.R rf01 -1
 run.args <- commandArgs (TRUE)
 
 ## ----configuration, include=TRUE-----------------------------------------
 
-SavePlotsToFiles <- TRUE # if TRUE plots are saved to a file, and not displayed
+SavePlotsToFiles <- 1 # if != 0 plots are saved to a file
+                      # 2 => display via evince when finished.
 if (length (run.args) > 2) {
-  SavePlotsToFiles <- FALSE
-  x11 ()
+  SavePlotsToFiles <- as.numeric(run.args[3])
+  if (SavePlotsToFiles == 0) {
+    x11 ()
+  }
 }
-print (sprintf (" length of run.args is %d, SavePlotsToFiles is %d", length (run.args), SavePlotsToFiles))
+print (sprintf (" length of run.args is %d, SavePlotsToFiles is %d", 
+                length (run.args), SavePlotsToFiles))
 nps <- 30 
 Flight <- "rf01"
 Project <- "WINTER"
 # x <- readline(sprintf("Project is %s; CR to accept or enter new project name: ", Project))
 # if (nchar(x) > 1) {Project <- x}
 print(sprintf("Project is %s", Project))
+## find max rf in data directory, use as default if none supplied via command line:
+Fl <- sort (list.files (sprintf ("%s%s/", DataDirectory (), Project), 
+                        sprintf ("%srf...nc", Project)), decreasing = TRUE)[1]
+Flight <- sub (Project, '',  sub (".nc", '', Fl))
+## print (sprintf ("default flight is %s", Fl))
+
 if (length (run.args) > 0) {
   Flight <- run.args[1]
 } else {
@@ -63,6 +76,13 @@ if (length (run.args) > 1) {
   if (nchar(x) > 0) {nplots <- eval(parse(text=paste('c(',x,')', sep='')))}
 }
 print (nplots)
+StartTime <- 0; EndTime <- 0 ## can set start and end times for plot
+if (length(run.args) > 3) {
+  StartTime <- as.numeric (run.args[4])
+  if (length (run.args) > 4) {
+    EndTime <- as.numeric (run.args[5])
+  }
+}
 
 ### get data
 fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
@@ -74,7 +94,6 @@ source("./VarList")
 Data <- getNetCDF (fname, VarList)
 
 # data: select only points where TASX > 60, and optionally limit time range
-StartTime <- 0; EndTime <- 0 ## can set start and end times for plot
 DataV <- Data[setRange(Data$Time, StartTime, EndTime), ]
 DataV <- DataV[(!is.na (DataV$TASX)) & (DataV$TASX > 60), ]
 
@@ -194,9 +213,11 @@ CircleSearch (DataV)
 if (SavePlotsToFiles) {
   dev.off()
   print (sprintf ("Plots are ready in file %s", plotfile))
-#  system (sprintf ("evince %s&", plotfile))
+  if (SavePlotsToFiles == 2) {
+    system (sprintf ("evince %s&", plotfile))
+  }  
 } else {
-  message ("press Enter to dismiss plot and end routine")
+  message ("press Enter (with focus here) to dismiss the plot and end routine")
   invisible (readLines ("stdin", n=1))
 }
  

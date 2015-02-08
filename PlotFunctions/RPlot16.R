@@ -15,7 +15,7 @@ RPlot16 <- function (data) {
   DF <- data[, c("Time", "DBARP_RPT", "DBARU_RPC")]
   #DF$DBAR3_RPO <- SmoothInterp(data$DBAR3_RPO)
   DF$DBARP_RPT <- SmoothInterp(data$DBARP_RPT)
-  DF$DBARU_RPC <- SmoothInterp(data$DBARU_RPU)
+  DF$DBARU_RPC <- SmoothInterp(data$DBARU_RPC)
   plotWAC (DF, ylim=c(0,2), ylab="DBARP and DBARU", legend.position="topright")
   title ("1-min filter", cex.main=0.75)
   op <- par (mar=c(5,4,1,1)+0.1)

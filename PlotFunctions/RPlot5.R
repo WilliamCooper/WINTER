@@ -43,12 +43,15 @@ RPlot5 <- function (data) {
   layout(matrix(1:3, ncol = 1), widths = 1, heights = c(5,5,6))
   plotWAC (data[, c("Time", "EW_DPB", "EW_DPT", "EW_VXL")], ylab="EWy [hPa]", 
            logxy='y', ylim=c(1e-2, 100))
-  lineWAC (data$Time, MurphyKoop (data$ATX, data$PSFC), col='cyan', lty=2)
+  lineWAC (data$Time, MurphyKoop (data$ATX, data$PSXC), col='cyan', lty=2)
   title ("cyan line: equilibrium vapor pressure at ATX")
   plotWAC (data[, c("Time", "MR")], ylab="mixing ratio [g/kg]",
            logxy='y', ylim=c(0.01, 100))
   op <- par (mar=c(5,4,1,1)+0.1)
-  plotWAC (data[, c("Time", "RHUM")], ylab="relative humidity [%]")
+  data$RHVXL <- 100 * data$EW_VXL / MurphyKoop (data$ATX, data$PSXC)
+  data$RHDPB <- 100 * data$EW_DPB / MurphyKoop (data$ATX, data$PSXC)
+  data$RHDPT <- 100 * data$EW_DPT / MurphyKoop (data$ATX, data$PSXC)
+  plotWAC (data[, c("Time", "RHDPB", "RHDPT", "RHVXL")], lty=c(1,1,2), lwd=1, ylab="relative humidity [%]")
   hline (100)
 }
 

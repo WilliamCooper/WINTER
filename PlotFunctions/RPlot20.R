@@ -6,6 +6,7 @@ RPlot20 <- function (data) {
   CCDP <- get.var.ncdf(netCDFfile, "CCDP_LPC")
   CFSSP <- get.var.ncdf (netCDFfile, "CS100_LPT")
   Time <- get.var.ncdf (netCDFfile, "Time")
+  TASX <- get.var.ncdf(netCDFfile, "TASX")
   time_units <- att.get.ncdf (netCDFfile, "Time", "units")
   tref <- sub ('seconds since ', '', time_units$value)
   Time <- as.POSIXct(as.POSIXct(tref, tz='UTC')+Time, tz='UTC')
@@ -14,12 +15,24 @@ RPlot20 <- function (data) {
   CellSizes <- att.get.ncdf (netCDFfile, "CS100_LPT", "CellSizes")
   CellLimitsF <- CellSizes$value
   layout(matrix(1:6, ncol = 2), widths = c(5,5), heights = c(5,5,6))
+  ## yes, I know, bad-practice-reference to calling environment for StartTime
+  ifelse (StartTime > 0, jstart <- getIndex(Time, StartTime), jstart <- 1)
+  # print (sprintf ("start time in RPlot20 is %d and jstart is %d\n",
+  #                 StartTime, jstart))
   op <- par (mar=c(2,2,1,1)+0.1)
-  for (j in 1:length(Time)) {
+  for (j in jstart:length(Time)) {
     if (is.na(Time[j])) {next}
-    if (kount >= 24) {next}
+    if (!is.na(TASX[j]) && (TASX[j] < 90)) {next}
+    if (kount >= 24) {break}
     CDP <- CCDP[,j]
     FSSP <- CFSSP[,j]
+    ## convert distributions to number per cm per um
+    for (m in 2:length(CDP)) {
+      CDP[m] <- CDP[m] / (CellLimitsD[m] - CellLimitsD[m-1])
+    }
+    for (m in 2:length(FSSP)) {
+      FSSP[m] <- FSSP[m] / (CellLimitsF[m] - CellLimitsF[m-1])
+    }
     CDP[CDP <= 0] <- 1e-4
     FSSP[FSSP <= 0] <- 1e-4
     if ((any(CDP > 1, na.rm=TRUE)) || (any(FSSP > 1, na.rm=TRUE))) {

@@ -16,19 +16,32 @@ RPlot22 <- function (data) {
   CellLimitsP <- CellSizes$value
   layout(matrix(1:6, ncol = 2), widths = c(5,5), heights = c(5,5,6))
   op <- par (mar=c(2,2,1,1)+0.1)
-  for (j in 1:length(Time)) {
+  ## yes, I know, bad-practice-reference to calling environment for StartTime
+  ifelse (StartTime > 0, jstart <- getIndex(Time, StartTime), jstart <- 1)
+  # print (sprintf ("start time in RPlot20 is %d and jstart is %d\n",
+  #                 StartTime, jstart))
+
+  for (j in jstart:length(Time)) {
     if (is.na(Time[j])) {next}
     if (!is.na(TASX[j]) && (TASX[j] < 90)) {next}
-    if (kount >= 24) {next}
+    if (kount >= 24) {break}
     UHSAS <- CUHSAS[, j]
     PCASP <- CPCASP[, j]
+    ## convert distributions to number per cm per um
+    for (m in 2:length(UHSAS)) {
+      UHSAS[m] <- UHSAS[m] / (CellLimitsU[m] - CellLimitsU[m-1])
+    }
+    for (m in 2:length(PCASP)) {
+      PCASP[m] <- PCASP[m] / (CellLimitsP[m] - CellLimitsP[m-1])
+    }
+
     UHSAS[UHSAS <= 0] <- 1e-4
     PCASP[PCASP <= 0] <- 1e-4
     if ((any(UHSAS > 50, na.rm=TRUE)) || (any(PCASP > 1, na.rm=TRUE))) {
       kount <- kount + 1
       ifelse ((kount %% 3), op <- par (mar=c(2,2,1,1)+0.1),
               op <- par (mar=c(5.2,2,1,1)+0.1))
-      plot (CellLimitsU, UHSAS, type='s', ylim=c(1.e-1,1.e3), 
+      plot (CellLimitsU, UHSAS, type='s', ylim=c(1,1.e6), 
             xlab="Diameter [um]", log="y", col='blue', lwd=2)
       points (CellLimitsP, PCASP, type='s', col='darkgreen')
       title(sprintf("size distribution, Time=%s", strftime (Time[j], format="%H:%M:%S", tz='UTC')), 

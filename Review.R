@@ -5,7 +5,7 @@
 
 library(knitr)
 opts_chunk$set(echo=FALSE, include=TRUE, fig.lp="fig:")
-opts_chunk$set(fig.width=5.5, fig.height=7, fig.align="center", 
+opts_chunk$set(fig.width=7.5, fig.height=7, fig.align="center", 
                digits=4, fig.show="asis", fig.path="Figures/WR-")
 thisFileName <- "Review"
 require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
@@ -130,7 +130,7 @@ if (SavePlotsToFiles) {
   } else {
     plotfile = sprintf("~/RStudio/%s/%s%sPlots.pdf", Project, Project, Flight)
   }
-  pdf (file = plotfile)
+  cairo_pdf (filename = plotfile, onefile=TRUE)
   ## enable the next to get individual png files instead of one large pdf
   #### png (file = sprintf ("./Figures/WINTER%s-%%02d.png", Flight))
   print (sprintf ("plots saved in file %s", plotfile))
@@ -191,6 +191,8 @@ RPlot19Cap <- c("Measurements of potential and virtual potential temperature (to
 RPlot20Cap <- "Size distributions measured by the CDP and FSSP, each representing 1-s of measurements." 
 RPlot21Cap <- "Radiometric temperatures, RSTB (top panel, surface temperature) and RSTT (bottom panel, sky or cloud base temperature."
 
+## ----plot-loop-----------------------------------------------------------
+
 ### This section loops through plot functions, first loading them from 'PlotFunctions'
 ### and then running them with the appropriate data.
 for (np in 1:2) {
@@ -200,13 +202,15 @@ for (np in 1:2) {
   }
 }
 for (np in 3:nps) {
-  if (file.exists (sprintf ("PlotFunctions/RPlot%d.R", np))) {
+  if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
     if (testPlot(np)) {
       eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
       eval(parse(text=sprintf("RPlot%d(DataV)", np)))
     }
   }
 }
+
+## ----manuever-search-----------------------------------------------------
 
 PitchSearch (DataV)
 YawSearch (DataV)
@@ -218,10 +222,18 @@ if (SavePlotsToFiles) {
   print (sprintf ("Plots are ready in file %s", plotfile))
   if (SavePlotsToFiles == 2) {
     system (sprintf ("evince %s&", plotfile))
-  }  
+  }
+
+## I couldn't get this to work. Environment problems with refs to parent env.
+#   if (SavePlotsToFiles != 3) {
+#     plothtml <- sprintf ("WINTER%sPlots.html", Flight)
+#     print (sprintf (" making html files in %s", plothtml))
+#     syscmd <- sprintf ("Rscript -e 'commandArgs(TRUE);knitr::stitch_rhtml (\"Review.R\", output=\"%s\")' %s -1 3 &", plothtml, Flight)
+#     system (syscmd)
+#   }
 } else {
-  message ("press Enter (with focus here) to dismiss the plot and end routine")
-  invisible (readLines ("stdin", n=1))
+  ## message ("press Enter (with focus here) to dismiss the plot and end routine")
+  ## invisible (readLines ("stdin", n=1))
 }
  
 

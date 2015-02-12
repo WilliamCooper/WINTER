@@ -5,7 +5,7 @@
 
 library(knitr)
 opts_chunk$set(echo=FALSE, include=TRUE, fig.lp="fig:")
-opts_chunk$set(fig.width=7.5, fig.height=7, fig.align="center", 
+opts_chunk$set(fig.width=9.5, fig.height=7, fig.align="center", 
                digits=4, fig.show="asis", fig.path="Figures/WR-")
 thisFileName <- "Review"
 require(Ranadu, quietly = TRUE, warn.conflicts=FALSE)
@@ -85,7 +85,7 @@ if (length(run.args) > 3) {
 
 ### get data
 fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
-print (fname)
+print (sprintf ("processing %s", fname))
 # VarList must include all variable names that are used in this routine
 ## VarList is a file that contains all the variables needed. It loads
 ## 'VarList' as a vector of those names. Add new names to that file.
@@ -220,21 +220,24 @@ CircleSearch (DataV)
 if (SavePlotsToFiles) {
   dev.off()
   print (sprintf ("Plots are ready in file %s", plotfile))
+  print (Sys.time())
   if (SavePlotsToFiles == 2) {
     system (sprintf ("evince %s&", plotfile))
   }
 
-## I couldn't get this to work. Environment problems with refs to parent env.
-#   if (SavePlotsToFiles != 3) {
-#     plothtml <- sprintf ("WINTER%sPlots.html", Flight)
-#     print (sprintf (" making html files in %s", plothtml))
-#     syscmd <- sprintf ("Rscript -e 'commandArgs(TRUE);knitr::stitch_rhtml (\"Review.R\", output=\"%s\")' %s -1 3 &", plothtml, Flight)
-#     system (syscmd)
-#   }
+## make the html file, but only for SavePlotsToFiles == 1
+  if (SavePlotsToFiles == 1) {
+    plothtml <- sprintf ("WINTER%sPlots.html", Flight)
+    syscmd <- paste ("Rscript -e 'commandArgs(TRUE);knitr::spin (\"Review.R\",",
+                     "format=\"Rmd\")'", sprintf ("%s -1 3 ", Flight), sep=' ')
+    system (syscmd, wait=TRUE)
+    system (sprintf ("mv Review.html WINTER%sPlots.html", Flight))
+  }
 } else {
   ## message ("press Enter (with focus here) to dismiss the plot and end routine")
   ## invisible (readLines ("stdin", n=1))
 }
+
  
 
 

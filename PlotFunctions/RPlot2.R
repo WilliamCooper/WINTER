@@ -1,6 +1,7 @@
 ### plot 2: construct one-per-hour track plots
 RPlot2 <- function (data, Flight=NA) { 
   ## needs LATC, LONC, WDC, WSC, GGALT
+  ## add outer margin footer as for other plots?
   SE <- getStartEnd(data$Time)
   for (hr in 0:32) {
     if (hr*10000 < SE[2] && (hr+1)*10000 > SE[1]) {

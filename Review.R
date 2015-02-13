@@ -133,7 +133,7 @@ if (SavePlotsToFiles) {
   cairo_pdf (filename = plotfile, onefile=TRUE)
   ## enable the next to get individual png files instead of one large pdf
   #### png (file = sprintf ("./Figures/WINTER%s-%%02d.png", Flight))
-  print (sprintf ("plots saved in file %s", plotfile))
+  print (sprintf ("saving plots to file %s", plotfile))
 }
 
 #----------------------------------------------------------------------------
@@ -159,10 +159,12 @@ source ("./PlotFunctions/YawSearch.R")
 
 SE <- getStartEnd (Data$Time)
 i <- getIndex (Data$Time, SE[1])
+FigFooter=sprintf("%s %s %s %s-%s UTC,",Project,toupper(Flight),strftime(Data$Time[i], format="%Y-%m-%d", tz='UTC'),strftime(Data$Time[i], format="%H:%M:%S", tz='UTC'),strftime(Data$Time[getIndex(Data$Time,SE[2])], format="%H:%M:%S", tz='UTC'))
+FigDatestr=strftime(Sys.time(), format="%Y-%m-%d %H:%M:%S %Z")
 RPlot1aCap <- sprintf("Flight track for %s flight %s on %s, %d--%d UTC", Project, Flight,
-                      strftime(Data$Time[i], format="20%y-%m-%d", tz='UTC'), SE[1], SE[2])
+                      strftime(Data$Time[i], format="%Y-%m-%d", tz='UTC'), SE[1], SE[2])
 RPlot1bCap <- sprintf("Height vs. time for %s flight %s on %s, %d--%d UTC", Project, Flight,
-                      strftime(Data$Time[i], format="20%y-%m-%d", tz='UTC'), SE[1], SE[2])
+                      strftime(Data$Time[i], format="%Y-%m-%d", tz='UTC'), SE[1], SE[2])
 RPlot3Cap <- "Air temperature (ATy) determined from the different temperature sensors."
 RPlot4Cap <- "Comparisons by pairs of temperature sensors. Red continuous lines show the temperature difference multiplied by 50 as a function of the temperature on the abscissa, and dashed red lines show 1C tolerances."
 RPlot5Cap <- c("Measurements of dew point from the available measurements.",
@@ -197,11 +199,13 @@ RPlot21Cap <- "Radiometric temperatures, RSTB (top panel, surface temperature) a
 ### and then running them with the appropriate data.
 for (np in 1:2) {
   if (testPlot(np)) {
+	print(paste('Plot',np))
     eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
     eval(parse(text=sprintf("RPlot%d(Data, Flight)", np)))
   }
 }
 for (np in 3:nps) {
+	print(paste('Plot',np))
   if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
     if (testPlot(np)) {
       eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
@@ -209,7 +213,7 @@ for (np in 3:nps) {
     }
   }
 }
-
+print('done plotting')
 ## ----manuever-search-----------------------------------------------------
 
 PitchSearch (DataV)

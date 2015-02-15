@@ -1,5 +1,6 @@
 ### plot 18: plot skew-T for individual climbs and descents:
 RPlot18 <- function (data) {
+## need to add footer if/when reimplemented
   ## needs PSFC, ATX, DPXC, GGALT
   # search for soundings: 3 min climb/descent > tol
   del <- 180

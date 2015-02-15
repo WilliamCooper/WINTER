@@ -199,15 +199,15 @@ RPlot21Cap <- "Radiometric temperatures, RSTB (top panel, surface temperature) a
 ### and then running them with the appropriate data.
 for (np in 1:2) {
   if (testPlot(np)) {
-	print(paste('Plot',np))
+    print(paste('Plot',np))
     eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
     eval(parse(text=sprintf("RPlot%d(Data, Flight)", np)))
   }
 }
 for (np in 3:nps) {
-	print(paste('Plot',np))
   if (file.exists (sprintf ("./PlotFunctions/RPlot%d.R", np))) {
     if (testPlot(np)) {
+      print(paste('Plot',np))
       eval(parse(text=sprintf("source(\"PlotFunctions/RPlot%d.R\")", np)))
       eval(parse(text=sprintf("RPlot%d(DataV)", np)))
     }

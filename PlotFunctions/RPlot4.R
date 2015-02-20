@@ -11,12 +11,15 @@ RPlot4 <- function (data) {
     plot (DF <- data[, c("ATHL1", "ATHL2")], pch=20,ylab=ylb)
     lines (c(-70.,30.), c(-69.,31.), col="darkorange", lwd=2, lty=2)
     lines (c(-70.,30.), c(-71.,29.), col="darkorange", lwd=2, lty=2)
-    DF$ATHL2 <- (data$ATHL2 - data$ATHL1)*5
-    points (DF, col='red', type='l', lwd=2)
-    lines (c(-70,30), c(5,5), col='red', lty=2)
-    lines (c(-70,30), c(-5,-5), col='red', lty=2)
-    axis(4,col='red',col.axis='red')
+    par(new=T)
+    plot (data$ATHL1, data$ATHL2 - data$ATHL1, type='l', col='red',axes=F,xlab='',ylab='',ylim=c(-2,2))
+    axis (4,col='red',col.axis='red')
+    abline(h=c(-1,1),col='red',lty=2)
     mtext(expression (paste ("ATHL2 - ATHL1  [", degree, "C]")),4,3,col='red',cex=0.8)
+#    DF$ATHL2 <- (data$ATHL2 - data$ATHL1)*5
+#    points (DF, col='red', type='l', lwd=2)
+#    lines (c(-70,30), c(5,5), col='red', lty=2)
+#    lines (c(-70,30), c(-5,-5), col='red', lty=2)
 # this info somewhat redundant with legend now, also cex=0.5 was too small to read in pngs but 1.0 too big for plot
 #    legend ("bottomright", legend=c("red: y=(ATHL2-ATHL1)*5", 
 #                                    "dashed lines: +/-1C error bands"), 
@@ -41,12 +44,16 @@ RPlot4 <- function (data) {
     plot (DF <- data[, c("ATHL2", "AT_A")], pch=20,ylab=ylb)
     lines (c(-70.,30.), c(-69.,31.), col="darkorange", lwd=2, lty=2)
     lines (c(-70.,30.), c(-71.,29.), col="darkorange", lwd=2, lty=2)
-    DF$AT_A <- (data$ATHL2 - data$AT_A)*5
-    points (DF, col='red', type='l', lwd=2)
-    lines (c(-70,30), c(5,5), col='red', lty=2)
-    lines (c(-70,30), c(-5,-5), col='red', lty=2)
-    axis(4,col='red',col.axis='red')
+    par(new=T)
+#### this is plotting ATHL2-AT_A but reporting in the title AT_A-ATHL2, should pick either and make consistent
+    plot (data$ATHL2, data$ATHL2 - data$AT_A, type='l', col='red',axes=F,xlab='',ylab='',ylim=c(-2,2))
+    axis (4,col='red',col.axis='red')
+    abline(h=c(-1,1),col='red',lty=2)
     mtext(expression (paste ("ATHL2 - AT_A  [", degree, "C]")),4,3,col='red',cex=0.8)
+#    DF$AT_A <- (data$ATHL2 - data$AT_A)*5
+#    points (DF, col='red', type='l', lwd=2)
+#    lines (c(-70,30), c(5,5), col='red', lty=2)
+##    lines (c(-70,30), c(-5,-5), col='red', lty=2)
 # this info somewhat redundant with legend now, also cex=0.5 was too small to read in pngs but 1.0 too big for plot
 #    legend ("topleft", legend=c("red: y=(ATHL2-AT_A)*5", 
 #                                "dashed lines: +/-1C error bands"), 

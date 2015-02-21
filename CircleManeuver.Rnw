@@ -102,11 +102,8 @@ $T=159$~s for flight at 125 m/s at an altitude of about 12,500~ft.}
 \section{Running the 'CircleManeuver.R' program}
 
 <<initialize, echo=FALSE, include=FALSE>>=
-require(Ranadu) 
+suppressMessages(require(Ranadu))
 library(knitr) 
-require(ggplot2) 
-require(grid) 
-require(ggthemes) 
 require(maps)
 require(mapdata)
 require(mapproj)
@@ -827,7 +824,7 @@ Reproducibility:
 \textsf{\textsc{\textcolor{blue}{Contains:}}} & attachment list below\tabularnewline
 \textsf{\textsc{\textcolor{blue}{Program:}}} & \Sexpr{thisFileName}.Rnw\tabularnewline
 \textsf{\textsc{\textcolor{blue}{Original Data:}}} & /scr/raf\_data/\Sexpr{Project}/\Sexpr{Project}\Sexpr{Flight}.nc \tabularnewline
-\textsf{\textsc{\textcolor{blue}{Git:}}} & https://github.com/WilliamCooper/\Sexpr{thisFileName}.git\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Git:}}} & https://github.com/WilliamCooper/WINTER.git\tabularnewline
 \end{tabular}
 
 \attachm{\Sexpr{thisFileName}.Rnw\\\Sexpr{thisFileName}.R\\\Sexpr{thisFileName}.pdf\\chunks/CircleSearch.R\\SessionInfo}

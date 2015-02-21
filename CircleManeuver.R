@@ -1,10 +1,10 @@
 
 ## ----initialize, echo=FALSE, include=FALSE-------------------------------
-require(Ranadu) 
+suppressMessages(require(Ranadu))
 library(knitr) 
-require(maps)
-require(mapdata)
-require(mapproj)
+library(maps)
+library(mapdata)
+library(mapproj)
 # set global chunk options 
 opts_chunk$set(fig.path='figure/', echo=FALSE, fig.align='center', fig.show='hold', fig.width=6, fig.height=5, fig.lp="fig:")
 options(replace.assign=TRUE,width=49, digits=2)
@@ -21,8 +21,16 @@ recalculateWind <- FALSE
 findWindFromGPS <- FALSE
 #### ------
 
+## check for help request:
 run.args <- commandArgs (TRUE)
 if (length (run.args) > 0) {
+  ## check for help request; if found, print usage and exit
+  if (grepl ('help', run.args[1])) {
+    cat ("Usage:\n  Rscript CircleManeuver.R Project Flight StartTime EndTime flag1 flag2\n    Project = project name (e.g., WINTER)\n    Flight = flight name (e.g., rf01\n    StartTime and EndTime: format HHMMSS (e.g., 195230)\n    flag1 = 1 to enable recalculation of the wind\n    flag2 = 1 to enable recalculation of wind direction from drift only\n")
+    cat ("  omit or use 0 for flags to suppress these options;\n  use -1 for times to search for circles\n")
+    cat ('Alternate: from R or RStudio:  source("CircleManeuver.R")\n  then answer program queries for run parameters\n')
+    quit (save="no")
+  }
   Project <- run.args[1]
 } else {
   if (UserInteraction) {
@@ -64,7 +72,7 @@ if (length (run.args) > 3) {
   }
 }
 
-## undocumented options: 5th argument == 1 sets recalculateWind TRUE, 
+## additional options: 5th argument == 1 sets recalculateWind TRUE, 
 ## 6th sets findWindFromGPS TRUE
 if (length (run.args) > 4) {
   recalculateWind <- as.numeric (run.args[5])
@@ -73,6 +81,10 @@ if (length (run.args) > 4) {
 if (length (run.args) > 5) {
   findWindFromGPS <- as.numeric (run.args[6])
 }
+
+plotfile <- sprintf ("~/RStudio/%s/%s%sCirclePlots.pdf", Project, Project, Flight)
+cairo_pdf (filename=plotfile, onefile=TRUE)
+print (sprintf ("saving plots to %s", plotfile))
 
 ReloadData <- FALSE     # if FALSE, use data previously saved (faster)
 ReloadData <- TRUE      # if TRUE, load data from netCDF files again
@@ -123,7 +135,9 @@ if (startCircles < 0 || endCircles < 0) {
 r <- setRange(D$Time, startCircles,endCircles)   # set this to span the circle maneuver
 DC <- D[r, ]
 plotTrack (DC, .Spacing=2, .WindFlags=0.02)                 # plot the flight track
+title (sprintf ("Project %s, Flight %s", Project, Flight), cex.main=0.8)
 plotTrack (DC, xc=NA, .Spacing=2)          # xc=NA is flag to do drifting plot
+title (sprintf ("Project %s, Flight %s -- Drifting Plot", Project, Flight), cex.main=0.8)
 
 
 ## ----recalculate-wind, eval=FALSE----------------------------------------
@@ -193,7 +207,7 @@ if (findWindFromGPS) {
   A <- nlm (csq, c(wx, wy, dV, dG), DC, hessian=TRUE)
   rms <- sqrt(A$minimum / nrow (DC))
   bestFit <- A$estimate
-  print (bestFit)
+  ## print (bestFit)
   
   # best-fit wind:
   bestWD <- atan2(-bestFit[1], -bestFit[2]) / Cradeg + 180. %% 360
@@ -231,6 +245,7 @@ lines(c(90,90), c(0.,50.), col='red', lwd=2)
 lines(c(270,270), c(0.,50.), col='red', lwd=2)
 lines(c(360,360), c(0.,50.), col='red', lwd=2)
 lines(c(0,0), c(0.,50.), col='red', lwd=2)
+title ("variation of measured wind speed with flight direction wrt the wind", cex.main=0.80)
 # print(mean(DD$WDC,na.rm=TRUE))
 
 DD$Ang <- DD$Ang * Cradeg
@@ -243,6 +258,7 @@ lines (xp, yp, col='darkorange', lty=2, lwd=4)
 # find rms error after adjustment:
 DD$WSCorr <- DD$WSC - cf[2] * cos(DD$Ang) - cf[3] * DD$TASX * sin(DD$Ang)
 plot (DD$Ang, DD$WSCorr, col='blue', type='p', pch=20, ylim=c(pmin,pmax), xlab="heading - wind direction [deg.]", ylab="corrected wind speed [m/s]")
+title ("after correction by best-fit offsets", cex.main=0.80)
 print (sprintf ("rms before and after fit adjustment: %.2f and %.2f m/s", sd(DD$WSC, na.rm=TRUE), sd(DD$WSCorr, na.rm=TRUE)))
 
 
@@ -266,6 +282,18 @@ cat (sprintf ("Fit results: wind speed %.2f m/s, TASX correction %.2f \nSS corre
 # yr <- mean(DCR$SSLIP)
 # lines(c(DCR$Time[1], DCR$Time[length(DCR$Time)]), c(yr,yr), col='darkorange', lty=2, lwd=4)
 
+## add a frame with the key results:
+plot (c(0,1,1,0,0), c(0,0,1,1,0), type='l', xlab='', ylab='')
+text (0.5, 0.8, sprintf ("Project %s Flight %s Times %.0f--%.0f", Project, Flight, startCircles, endCircles))
+s <- ""
+if (recalculateWind) {s <- "using recalculated wind;"}
+if (findWindFromGPS) {s <- paste (s, " using ref wind from GPS", sep='')}
+text (0.5, 0.7, s)
+text (0.5, 0.6, sprintf ("Fit results: wind speed %.2f m/s, TASX correction %.2f \nSS correction %.2f deg., heading correction %.2f deg.\n", cf[1], cf[2], dbm, cf[3]*180/pi-dbm))
+text (0.5, 0.5, sprintf ("rms before and after fit adjustment: %.2f and %.2f m/s", sd(DD$WSC, na.rm=TRUE), sd(DD$WSCorr, na.rm=TRUE)))
+
+Z <- dev.off ()
+print (sprintf ("plots are ready in %s", plotfile))
 
 
 

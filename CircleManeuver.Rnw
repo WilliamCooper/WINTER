@@ -1,0 +1,848 @@
+%% LyX 2.1.2 created this file.  For more info, see http://www.lyx.org/.
+%% Do not edit unless you really know what you are doing.
+\documentclass[12pt]{article}
+\usepackage{mathptmx}
+\usepackage[T1]{fontenc}
+\usepackage[letterpaper]{geometry}
+\geometry{verbose,tmargin=3.54cm,bmargin=2.54cm,lmargin=2.54cm,rmargin=2.54cm,headheight=1cm,headsep=2cm,footskip=0.5cm}
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\setcounter{secnumdepth}{2}
+\setcounter{tocdepth}{2}
+\setlength{\parskip}{\medskipamount}
+\setlength{\parindent}{0pt}
+\usepackage{color}
+\usepackage{amsmath}
+\usepackage[unicode=true]
+ {hyperref}
+\usepackage{breakurl}
+
+\makeatletter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% LyX specific LaTeX commands.
+%% Because html converters don't know tabularnewline
+\providecommand{\tabularnewline}{\\}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% User specified LaTeX commands.
+\input colordvi
+\usepackage{color}
+\fancyhead{}
+\fancyfoot[CE,CO]{}
+\newtoks{\addressee} \global\addressee={}
+\newdimen\longindent \longindent=3.5truein
+\fancyhead[L]{Memo to: \the\addressee \\ \datetoday \\ Page \thepage \hfill}
+\renewcommand{\headrulewidth}{0.0pt}
+\newenvironment{lyxlist}[1]
+{\begin{list}{}
+{\settowidth{\labelwidth}{#1}
+\setlength{\leftmargin}{\labelwidth}
+\addtolength{\leftmargin}{\labelsep}
+\renewcommand{\makelabel}[1]{##1\hfil}}}
+{\end{list}}
+\newcommand{\datetoday}{\number\day\space
+     \ifcase\month\or January\or February\or March\or April\or May\or
+     June\or July\or August\or September\or October\or November\or
+     December\fi
+     \space\number\year}
+\newcommand{\EOLmemo}{\null \vskip-1.5truein
+{\raggedright \textsf{\textsc{\large \textcolor{blue}{Earth Observing Laboratory}}}}\par
+{\raggedright \textsf{\textsl{\textcolor{blue}{Memorandum:}}}} \par \vskip6pt
+{\color{blue}{\hrule}}\par
+\vskip0.3truein \leftline{\hskip \longindent \datetoday} \vskip0.2truein
+\thispagestyle{empty}}
+\newcommand{\attachm}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachments:] {#1}
+\end{lyxlist}}
+\newcommand{\cc}[1]{\begin{lyxlist}{Attachments:00}
+\item [cc:] {#1}
+\end{lyxlist}}
+\newcommand{\attach}[1]{\begin{lyxlist}{Attachments:00}
+\item [Attachment:] {#1}
+\end{lyxlist}}
+\newif\ifmath
+\mathfalse
+%\mathtrue
+%usage: \encl{A\\B\\C} or \cc{ma,e1\\name2\\name3}
+
+\makeatother
+
+\begin{document}
+\EOLmemo 
+
+\global\addressee={WINTER project file}  % >>change "File" to the "To:" name desired
+
+\begin{tabular}{ll}
+\textsf{\textsc{\textcolor{blue}{To:}}} & \the\addressee\tabularnewline
+\textsf{\textsc{\textcolor{blue}{From:}}} & Al Cooper\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Subject:}}} & Analyzing circle maneuvers\tabularnewline
+\end{tabular}
+
+\bigskip
+
+
+\section{The circle maneuver}
+
+The circle maneuver consists of at least two circles, one each in
+a left turn and a right turn, with a one-minute straight leg between
+left-turn circle(s) and right-turn circle(s) and with a one-minute
+straight leg before and after the maneuver. The preferred orientation
+is for the straight legs to be against or along the wind direction.
+The circles are best flown under control of the flight management
+system, with heading bug turned so as to keep ahead of the heading
+and give a constant-rate turn (with a rate that may change with altitude).
+The turn rate is often <3 min for a 360$^{\circ}$ turn at intermediate
+flight altitudes for the aircraft. It is important to have a uniform
+and non-turbulent wind field and to maintain the roll angle constant.
+\footnote{The time for a 360$^{\circ}$ turn ($T$) at airspeed ($V$) and roll
+angle $(\phi$) is given by $T=2\pi V/(g\,\tan\phi)$. For the particular
+example used in this memo, the bank angle was about 26.7$^{\circ}$and
+$T=159$~s for flight at 125 m/s at an altitude of about 12,500~ft.}
+
+
+\section{Running the 'CircleManeuver.R' program}
+
+<<initialize, echo=FALSE, include=FALSE>>=
+require(Ranadu) 
+library(knitr) 
+require(ggplot2) 
+require(grid) 
+require(ggthemes) 
+require(maps)
+require(mapdata)
+require(mapproj)
+# set global chunk options 
+opts_chunk$set(fig.path='figure/', echo=FALSE, fig.align='center', fig.show='hold', fig.width=6, fig.height=5, fig.lp="fig:")
+options(replace.assign=TRUE,width=49, digits=2)
+opts_knit$set(eval.after = "fig.cap")
+thisFileName <- "CircleManeuver"
+
+#### this section specifies defaults, changed by run-time arguments or user interaction
+Flight <- "tf01"        # this was the test flight with a circle maneuver
+Project <- "WINTER"
+startCircles <- 195200  # use 1955 to exclude some problem areas in the first circle
+endCircles <- 200455
+UserInteraction <- FALSE
+recalculateWind <- TRUE
+findWindFromGPS <- TRUE
+#### ------
+
+run.args <- commandArgs (TRUE)
+if (length (run.args) > 0) {
+  Project <- run.args[1]
+} else {
+  if (UserInteraction) {
+   x <- readline(sprintf("Project is %s; CR to accept or enter new Project name (e.g., WINTER): ",  Project))
+    print (x)
+    if (nchar(x) > 1) {Project <- x}
+  }
+}
+
+if (length (run.args) > 1) {
+  Flight <- run.args[2]
+} else {
+  if (UserInteraction) {
+    x <- readline(sprintf("Flight is %s; CR to accept or enter new flight name (rfxx format): ", Flight))
+    print (x)
+    if (nchar(x) > 1) {Flight <- x}
+  }
+}
+
+print(sprintf("Project is %s, Flight is %s", Project, Flight))
+
+if (length (run.args) > 2) {
+  startCircles <- as.numeric(run.args[3])
+} else {
+  if (UserInteraction) {
+    x <- readline (sprintf ("start time for circle maneuver is %.0f;\nCR to accept or enter new time, format HHMMSS:", startCircles))
+    print(x)
+    if (nchar(x) > 1) {startCircles <- as.numeric(x)}
+  }
+}
+
+if (length (run.args) > 3) {
+  endCircles <- as.numeric(run.args[4])
+} else {
+  if (UserInteraction) {
+   x <- readline (sprintf ("end time for circle maneuver is %.0f;\nCR to accept or enter new time, format HHMMSS: ", endCircles))
+    print(x)
+    if (nchar(x) > 1) {endCircles <- as.numeric(x)}
+  }
+}
+
+## options: 5th argument == 1 sets recalculateWind TRUE, 
+## 6th sets findWindFromGPS TRUE
+if (length (run.args) > 4) {
+  recalculateWind <- as.numeric (run.args[5])
+}
+
+if (length (run.args) > 5) {
+  findWindFromGPS <- as.numeric (run.args[6])
+}
+
+ReloadData <- FALSE     # if FALSE, use data previously saved (faster)
+ReloadData <- TRUE      # if TRUE, load data from netCDF files again
+if (ReloadData) {
+  fname = sprintf("%s%s/%s%s.nc", DataDirectory (), Project, Project, Flight)
+  # fname <- "/home/Data/WINTER/WINTERtf01hr.nc"
+  ## check file:
+  while (!file.exists(fname)) {
+    x <- readline(sprintf ("file %s not found; enter full-path file name or CR to quit:", fname))
+    if (nchar(x) > 1) {
+      fname <- x
+    } else {
+      quit (save="no")
+    }
+  }
+  VarNames <- c("GGALT","LATC", "LONC", "PSXC", "QCXC",
+              "WDC", "WSC", "GGVEW", "GGVNS", "VEW", "VNS", "TASX",
+              "ADIFR", "SSLIP", "PITCH", "ATTACK",
+              "ROLL", "THDG", "BDIFR", "EWX", "GGVSPD", "PSFD", "PSFRD", "QCF", "QCFR",
+              "PSFDC", "PSFC", "QCFRC",
+              "WIC", "GGVEW", "GGVNS", "VSPD", "ATX", "VNSC", "VEWC")
+  D <- getNetCDF (fname, VarNames)      # this handles high-rate data also
+  save(D, file="~/RStudio/DEEPWAVE/CircleData.Rdata")
+} else {
+  load(file="~/RStudio/DEEPWAVE/CircleData.Rdata") # loads D as previously saved
+}
+
+<<search-for-circles>>=
+
+if (startCircles < 0 || endCircles < 0) {
+  if (file.exists("./chunks/CircleSearch.R")) {
+    source ("./chunks/CircleSearch.R")
+    SE <- CircleSearch (D)
+    startCircles <- as.numeric (SE[1])
+    endCircles   <- as.numeric (SE[2])
+  }
+  if (startCircles < 0 || endCircles < 0) {
+    print (sprintf ("no circle times available; aborting..."))
+    quit (save="no")
+  }
+  print (sprintf ("new circle start and end times: %.0f--%.0f", startCircles, endCircles))
+}
+
+<<plot-track, echo=FALSE, include=TRUE, fig.cap="Portion of the flight track from WINTER tf01, 19:52:00 to 20:04:55, showing the circle maneuver flown at that time. The top panel shows the geographic position of the track, and the lower panel shows the track in a reference frame drifting with the wind.", fig.height=4>>=
+
+r <- setRange(D$Time, startCircles,endCircles)   # set this to span the circle maneuver
+DC <- D[r, ]
+plotTrack (DC, .Spacing=2, .WindFlags=0.02)                 # plot the flight track
+plotTrack (DC, xc=NA, .Spacing=2)          # xc=NA is flag to do drifting plot
+
+<<recalculate-wind, eval=TRUE>>=
+
+if (recalculateWind) {
+  ## special section: recalculate winds because there was a problem with QCF
+  ## tf01 winds were based on PSFRD/QCFR, but there were errors still in AKRD/SSRD
+  ## initial processing: no GGVEW time lag, no cal applied to heading
+  D$ATTACK <- D$AKRD <- 4.8596 + 14.141572 * D$ADIFR / D$QCFR
+  D$SSLIP <- D$SSRD <- 1.610 + 13.4098 * D$BDIFR / D$QCFR
+  ##                   -0.57 ## to remove the offset found here.
+  D$TASX <- TrueAirspeed (MachNumber (D$PSFC, D$QCFRC, D$EWX), D$ATX, D$EWX/D$PSFC)
+  ##        -0.14  ## to remove indicated correction from fits in this routine
+  ## D$THDG <- D$THDG - 0.14   ## this correction would remove the heading error
+  startCircles = 195500        ## this is also SPECIAL for this case; exclude normally
+  D <- WindProcessor (D)    ## adds WSN, WDN, WIN and applies pitch correction algorithm
+  D$WSC <- D$WSN       # make substitutions to leave code below intact
+  D$WDC <- D$WDN
+  r <- setRange(D$Time, startCircles,endCircles)   # set this to span the circle maneuver
+  DC <- D[r, ]
+}
+
+
+<<get-mean-wind-and-RL-subsets>>=
+
+## subsets that are just left-turn circles and just right-turn circles
+DCL <- DC[DC$ROLL < -24, ]
+DCR <- DC[DC$ROLL >  24, ]
+# rL <- setRange(DC$Time, 195230,195730)     # period of left turns
+# rL <- setRange(DC$Time, 195500,195730)     # period of left turns
+# rR <- setRange(DC$Time, 195930,200410)     # period of right turns
+ROLLbarL <-mean(DCL$ROLL)
+ROLLsdL <- sd(DCL$ROLL)
+ROLLbarR <- mean(DCR$ROLL)
+ROLLsdR <- sd(DCR$ROLL)
+WDM <- DC$WDC * pi / 180.
+WSM <- DC$WSC
+WEW <- WSM * sin (WDM)
+WNS <- WSM * cos (WDM)
+WEWbar <- mean (WEW, na.rm=TRUE)
+WNSbar <- mean (WNS, na.rm=TRUE)
+WDMbar <- atan2 (WEWbar, WNSbar) * 180. / pi
+WSMbar <- mean (sqrt(WEW^2+WNS^2), na.rm=TRUE)
+Cradeg = pi/180.
+# print (sprintf ("mean of measured wind in circles: %.1f deg. / %.1f m/s", WDMbar, WSMbar))
+
+@
+
+CircleManeuver.R is an R script for fitting a sinusoidal variation
+to a circle maneuver. It is located on tikal.eol.ucar.edu in \textasciitilde{}cooperw/RStudio/WINTER
+and also in this github directory \href{https://github.com/WilliamCooper/WINTER.git}{(linked here)}.
+Anyone can download this from github, but the program makes extensive
+use of 'Ranadu' functions so this should be used with that package,
+also available on tikal and on github. The program that produced this
+memo, CircleManeuver.Rnw, contains the same R code; CircleManeuver.R
+was extracted from CircleManeuver.Rnw using 'purl'. This memo therefore
+provides documentation to accompany use of CircleManeuver.R. Running
+that script will make plots and print text messages similar to those
+in this memo, so users can use those to construct a new report for
+future maneuvers.
+
+Here are steps for running the program:
+\begin{enumerate}
+\item Step 1 is to find the maneuvers. The current version of Review.R,
+being used for WINTER, includes a section that searches for candidates
+for maneuvers, and that may be helpful when finding appropriate periods
+to analyze. For example, on WINTER tf01, processing with Review.R
+printed this message:\\
+\texttt{\#\# {[}1{]} \textquotedbl{}possible circle: 195221-{}-195749,
+703-deg turn\textquotedbl{}}~\\
+\texttt{\#\# {[}1{]} \textquotedbl{}possible circle: 195919-{}-200437,
+700-deg turn\textquotedbl{}}\\
+\\
+The flight track for the period from 19:52:00 to 20:04:55 is shown
+in Fig.~1, which shows that this was indeed a circle maneuver. The
+first circle was not flown very well, so the period before 19:55 will
+be excluded from this example analysis. Deviations from normal attitude
+angles also are present for this first circle, and the sideslip shows
+a particularly large variation. Otherwise, this is is a good circle
+maneuver and a good example for analysis.
+\item To use this routine, you have several options for configuration. The
+first is to use run-time arguments as follows, for example from a
+terminal window on tikal:\\
+\texttt{~~~~~cd \textasciitilde{}/RStudio/WINTER ~~~~~~\#\#
+cd to location of the routine}~\\
+\texttt{~~~~~Rscript CircleManeuver.R WINTER tf01 195500 200410 0 0}~\\
+\texttt{}~\\
+The second is to run using RStudio (or R directly) and execute
+the script CircleManeuver.R. In this case, the script will ask for
+the project name, flight number, and start and end times. In either
+method, if either time is -1 the script will search for the maneuver
+and if found will use the interval it finds. Also, if the data file
+is not found where it normally would reside, the script will ask for
+a complete path name for the file. \\
+\\
+A third option is to edit the default entries directly in the script
+and set 'UserInteraction <- FALSE' to prevent the program from stopping
+to ask for this information. The lines to set are in the first program
+'chunk':\\
+\texttt{~~~~~Flight <- tf01}~\\
+\texttt{~~~~~Project <- ``WINTER''}~\\
+\texttt{~~~~~startCircles <- 195200 ~~~~\# set to span the
+circle maneuver}~\\
+\texttt{~~~~~endCircles <- 200455}~\\
+\texttt{~~~~~UserInteraction <- FALSE} \\
+\texttt{~~~~~recalculateWind <- FALSE \# option set by 5th runtime argument}\\
+\texttt{~~~~~findWindFromGPS <- FALSE \# option set by 6th runtime argument}\\
+\item There are some optional sections in the 'CircleManeuver.R' script.
+The last two arguments in the Rscript call enable the first two, listed below.
+
+\begin{enumerate}
+\item There is an option enabled by 'recalculateWind' to recalculate the
+wind variables from original measurements. This can be used as
+a substitute for reprocessing the netCDF file with different options.
+For example, you can enter different sideslip sensitivity coefficients,
+heading offset, use different sets of measurements for calculating
+the wind, etc. \footnote{This was used in this example to recalculate the wind
+using different formulas for AKRD and SSRD, using the recommendations
+from \href{https://docs.google.com/a/ucar.edu/file/d/0B1kIUH45ca5AVFlKeHpWVG5Ed1U/edit?usp=drive_web}{FRAPPEprocessing.pdf}.}
+Another use for this option is to check suggested changes to see if
+applying corrections to, e.g., heading indeed results in reduced offsets
+as determined by the script.
+\item An option enabled by 'findWindFromGPS' determines the wind only
+from the drift measured by GPS during the maneuver. Enabling this produces
+some additional text and plots showing results from supplemental fits
+that can complement the primary fit used in CircleManeuvers.R. When
+this option is set FALSE, the mean measured wind direction is used
+instead of the wind produced by this supplemental fit. This option
+can be useful if there is suspicion that the mean measured wind direction
+is in error by more than a few degrees.
+\item The chunk 'search-for-circles' will look for circle maneuvers and
+use them if you provide start and/or end times of -1. This option
+is activated by supplying those flags in place of the times, either
+interactively or as the run-time arguments.
+\item There is an option 'supplemental-math' that applies only to this documentation
+program and causes it to print a long derivation that is duplicated
+elsewhere, notably in \href{https://drive.google.com/open?id=0B1kIUH45ca5AVlV5amF3a2RVYkk&authuser=0}{the wind uncertainty document}.
+By default it is suppressed here but embedded for reference.
+\end{enumerate}
+\end{enumerate}
+There were some special problems with the flight used for this example,
+so the 'recalculate-wind' option is used here although normally it
+should not be needed. \footnote{QCF failed and produced erroneously high values on this flight,
+so in processing PSFRD and QCFR were set as primary sensors for calculations
+including TASX. However, calculations for ATTACK and SSLIP were still
+based on the erroneous QCF and so were in error, and PCORs based on
+QCF were applied to PSFD to obtain PSFDC which was therefore also
+affected by the bad QCF measurements. For these reasons, the wind
+measurements and calculations of angle-of-attack and sideslip were
+repeated here using the variable QCFR and appropriate calibrations
+as in the FRAPPEprocessing.pdf memo.}
+
+
+\section{Information that the circle maneuver provides}
+
+Circle maneuvers can provide this information on wind measurements:
+\begin{enumerate}
+\item An estimate of the mean wind, from GPS and heading only, that can
+be compared to the mean measured wind. The difference in magnitude
+should usually be within about 0.5~m/s for good wind measurements
+and steady conditions during the circle maneuver.
+\item A test of the validity of TASX. For good measurements, the indicated
+error should be less than about 0.3~m/s.
+\item An estimate of the offset error in sideslip (the first
+sensitivity coefficient).
+\item An estimate of the offset in heading. The
+uncertainty in heading should be less than about 0.3$^{\circ}$ for
+normal operation, but this may vary from flight to flight and in the
+circle maneuver because of the horizontal accelerations imposed on
+the IRU by the maneuver.
+\end{enumerate}
+
+\subsection{The sinusoidal response expected if errors are present}
+
+The \href{https://drive.google.com/open?id=0B1kIUH45ca5AVlV5amF3a2RVYkk&authuser=0}{document on wind uncertainty}
+contains a more extensive discussion of the basis for analysis of
+the circle maneuver. The key equation, with variables $v$ and $\lambda$
+representing the true wind speed and direction, $v_{m}$ the measured
+wind speed with error $\delta v_{m}$, $V$ and $\delta V$ the true
+airspeed and offset in true airspeed, $\psi$ and $\delta\psi$ the
+heading and offset in heading, $\phi$ the roll angle, and $\beta$
+and $\delta\beta$ the sideslip angle and offset in sideslip, is:
+
+\begin{equation}
+\delta v_{m}=-\delta V\thinspace\cos\xi+\delta\xi\thinspace V\sin\xi\label{eq:delta-v}
+\end{equation}
+where $\xi$ is the angle between the flight direction relative to
+the air and the wind direction, defined as $\xi=\psi+\beta\cos\phi-\lambda$
+and having error $\delta\xi=\delta\psi+\delta\beta\thinspace\cos\phi$.
+For steady wind with speed $v$, the difference between the true wind
+speed and that measured around the circles is then\\
+\begin{equation}
+\delta v_{m}=v_{m}+A\thinspace\cos\xi+B\thinspace\sin\xi-v\label{eq:circle-fit-WS-1}
+\end{equation}
+
+
+where $A=-\delta V$, $B=V\delta\xi,$ and $v$ are three parameters
+that characterize the measurement errors. Best-fit values for these
+parameters can then be found by minimizing the error measure $\chi^{2}=\sum(\delta v_{m})^{2}$.
+Comparing wind measured
+upwind to that measured downwind results in a difference that is twice
+the error in true airspeed, while comparing wind measured while flying
+crosswind with wind from starboard to that measured while flying with
+wind from port results in a difference that is twice the heading error
+(corrected for sideslip error) multiplied by the true airspeed. However, fitting
+to the full circle makes it possible to use all the measurements to
+estimate these errors.
+
+A problem with this approach is that the true wind direction $\lambda$
+is needed to provide the reference direction for $\xi$, yet an error
+in wind measurement will introduce an error in this reference direction.
+The circle pattern largely corrects for this by including equal weighting
+of errors from all directions of flight, but it still may be better
+to determine the wind direction solely from the drift of the pattern
+as measured by GPS. That largely removes the wind-measuring system
+from the process and so should provide a better reference direction
+for use in (\ref{eq:circle-fit-WS-1}). This can be done by fitting
+the dead-reckoning flight track adjusted by the wind vector to the
+ground-speed track, or equivalently the dead-reckoning flight speed
+adjusted by the wind vector to the measured ground speed from GPS.
+This fit can include an unknown offset in heading,
+so that such an error will be corrected in the fit and should not
+affect the deduced wind direction. This option is normally suppressed
+but is included and discussed here to illustrate its use.
+
+The horizontal components of the motion of the aircraft, as measured
+from the aircraft, are these:
+
+\begin{eqnarray*}
+v_{p,x} & = & (V+\delta V)\sin(\xi^{\prime}+\delta\xi^{\prime})-v_{x}\\
+v_{p,y} & = & (V+\delta V)\cos(\xi^{\prime}+\delta\xi^{\prime})-v_{y}
+\end{eqnarray*}
+where $v_{p,x}$ and $v_{p,y}$ are the east and north components
+of the aircraft motion, $v_{x}$ and $v_{y}$ are the corresponding
+components of the wind, $V$ is the true airspeed with possible error
+$\delta V$, $\xi$ represents the direction of flight and so, for
+$\beta$=sideslip, $\alpha=$angle-of-attack, and $\phi=$roll, is
+$\xi^{\prime}=\psi+\beta\cos\phi-\alpha\sin\phi$. \footnote{The angle of attack
+enters here, while it did not in (\ref{eq:circle-fit-WS-1}), because
+there the angle of attack and sideslip have already entered the calculation
+of wind so only the error in sideslip is relevant, while any error
+in angle of attack is neglected. That is the reason that the variable
+here has a prime accent.} For fit parameters $v_{x}$, $v_{y}$, $\delta V$,
+and $\delta\xi$, best-fit values are found by minimizing the following
+error measure:\\
+\[
+\chi_{2}^{2}=\sum\left((v_{p,x}-v_{g,x})^{2}+(v_{p,y}-v_{g,y})^{2}\right)
+\]
+where $v_{g,x}$ and $v_{g,y}$ are the ground-speed components measured
+by GPS. 
+
+<<find-wind-direction-from-GPS, include=TRUE, eval=TRUE>>=
+
+if (findWindFromGPS) {
+  # define a chisquare error function:
+  csq <- function (x, .d) {
+    roll <- .d$ROLL * pi / 180
+    gamma <- (.d$THDG + x[4] + .d$SSLIP*cos(roll) - .d$ATTACK*sin(roll)) * pi / 180 
+    dvx <- (.d$TASX+x[3])*sin(gamma) -x[1] - .d$GGVEW
+    dvy <- (.d$TASX+x[3])*cos(gamma) -x[2] - .d$GGVNS
+    chisq <- sum (dvx**2 + dvy**2)
+  }
+  
+  NL <- nrow(DC$GGVEW)
+  wx <- 10.
+  wy <- 10.
+  dV <- 0.5
+  dG <- 0.5
+  A <- nlm (csq, c(wx, wy, dV, dG), DC, hessian=TRUE)
+  rms <- sqrt(A$minimum / nrow (DC))
+  bestFit <- A$estimate
+  # print (bestFit)
+  
+  # best-fit wind:
+  bestWD <- atan2(-bestFit[1], -bestFit[2]) / Cradeg + 180. %% 360
+  if (bestWD > 360) {bestWD <- bestWD - 360}
+  bestWS <- sqrt(bestFit[1]**2 + bestFit[2]**2)
+  DC$WDC[DC$WDC < 180] <- DC$WDC[DC$WDC < 180] + 360
+  aveWD <- mean (DC$WDC, na.rm=TRUE) %% 360
+  aveWS <- mean (DC$WSC, na.rm=TRUE)
+  print (sprintf ("wind determined from drift: %.1f / %.1f", bestWD, bestWS))
+}
+
+<<substitute-measured-mean-wind, include=TRUE>>=
+
+if (!exists("aveWD")) {
+  cat (sprintf ("GPS-drift wind section suppressed; \nmeasured mean wind (%.1f/%.1f) is used.", WDMbar, WSMbar))
+  bestWD <- WDMbar
+  bestWS <- WSMbar
+}
+
+@
+
+The result is that the estimated wind direction is \Sexpr{format(round(bestWD, 1), nsmall=1)}
+with magnitude \Sexpr{round(bestWS, 1)}~m/s. This direction will
+then be used for the direction $\lambda$ entering the relative angle
+$\xi$ in (\ref{eq:circle-fit-WS-1}). For comparison, the mean wind
+determined from the measurements was \Sexpr{format(round(WDMbar,1), nsmall=1)}
+/ \Sexpr{round(WSMbar,1)}. 
+
+
+\subsection{Results from fitting to the sinusoidal variation}
+
+<<plot-sine, fig.lp="fig:", fig.cap="The measured wind speed as a function of the difference between heading and mean wind direction, for the measurements from the flight segment shown in the preceding figure. Top: before correction (with dashed orange line showing the correction function); bottom: after correction.", fig.height=4, include=TRUE>>=
+
+DCR$Ang <- (DCR$THDG - bestWD + 360) %% 360
+DCL$Ang <- (DCL$THDG - bestWD + 360) %% 360
+DD <- rbind (DCR, DCL)
+pmin <- min(DD$WSC, na.rm=TRUE)
+pmax <- max (DD$WSC, na.rm=TRUE)
+plot (DCL$Ang, DCL$WSC, xlim=c(0,360), pch=19, col='blue', xlab="heading - wind direction [deg.]", ylab="measured wind speed [m/s]", ylim=c(pmin, pmax))
+points (DCR$Ang, DCR$WSC, pch=19, col='darkgreen')
+legend("bottomright", legend=c("left turns", "right turns"), col=c("blue", "darkgreen"), pch=16)
+lines(c(180,180), c(0.,50.), col='red', lwd=2)
+lines(c(90,90), c(0.,50.), col='red', lwd=2)
+lines(c(270,270), c(0.,50.), col='red', lwd=2)
+lines(c(360,360), c(0.,50.), col='red', lwd=2)
+lines(c(0,0), c(0.,50.), col='red', lwd=2)
+# print(mean(DD$WDC,na.rm=TRUE))
+
+DD$Ang <- DD$Ang * Cradeg
+fm <- lm (WSC~I(cos(Ang))+I(TASX*sin(Ang)), data=DD)
+cf <- coefficients(fm)
+xp <- 0:360
+TASAVG <- mean (DD$TASX, na.rm=TRUE)
+yp <- cf[1] + cf[2] * cos(xp*Cradeg) + cf[3] * TASAVG * sin(xp*Cradeg)
+lines (xp, yp, col='darkorange', lty=2, lwd=4)
+# find rms error after adjustment:
+DD$WSCorr <- DD$WSC - cf[2] * cos(DD$Ang) - cf[3] * DD$TASX * sin(DD$Ang)
+plot (DD$Ang, DD$WSCorr, col='blue', type='p', pch=20, ylim=c(pmin,pmax), xlab="heading - wind direction [deg.]", ylab="corrected wind speed [m/s]")
+print (sprintf ("rms before and after fit adjustment: %.2f %.2f m/s", sd(DD$WSC, na.rm=TRUE), sd(DD$WSCorr, na.rm=TRUE)))
+
+@
+
+Figure~\ref{fig:plot-sine} shows the measured wind speed as a function
+of the angle between the heading and the mean wind direction determined
+by the preceding fit. There is a clear sinusoidal variation, so it
+is useful to fit to these measurements to determine the magnitude
+of the errors. The best-fit results were a mean wind speed of \Sexpr{cf[1]}~m/s,
+true airspeed correction of \Sexpr{cf[2]}~m/s, and an offset in
+$\xi$ of \Sexpr{cf[3]*180/pi}$^{\circ}$. There is a significant
+reduction in the standard deviation of the measurement of wind speed,
+from \Sexpr{sd(DD$WSC, na.rm=TRUE)}\,m/s in the original measurements
+to \Sexpr{sd(DD$WSCorr, na.rm=TRUE)} after application of the corrections
+from the fit. Most of the standard deviation in the original measurements
+arises from the variation with $\xi$ (adjusted heading). The fit
+provides confirmation of the validity of the measured true airspeed,
+after application of the corrections deduced from LAMS. (Cf.~\href{http://www.atmos-meas-tech.net/7/3215/2014/}{Cooper et al., 2014}.)
+Note that, for this test case, PSFRD and QCFR are being used as primary
+pressure sensors and the corrections developed for that pair of pressure
+measurements are being used. The wind speed determined from the fit
+is also a very good match to the mean wind-speed measurement. However,
+the angular error $\delta\xi$ is large, significantly larger than
+the expected heading or sideslip uncertainty, and this indicates some
+problem needing further investigation.
+
+The indicated error is $\delta\xi=\delta\psi+\delta\beta\thinspace\cos\phi$,
+and it is not possible to separate the error in heading from the error
+in sideslip because $\cos\phi$ is constant throughout the left-turn
+and right-turn circles. Therefore, another approach to checking the
+sideslip angle is needed, as discussed in the next section.
+
+
+\section{Determining the sideslip offset}
+
+<<sideslip-correction>>=
+
+dbeta <- (DD$PITCH-DD$ATTACK*cos(DD$ROLL*pi/180))/sin(DD$ROLL*pi/180)-DD$SSLIP
+# hist (dbeta)
+dbm <-mean (dbeta, na.rm=TRUE)
+dbsd <- sd   (dbeta, na.rm=TRUE) / sqrt (length(dbeta))
+cat (sprintf ("Fit results: wind speed %.2f m/s, TASX correction %.2f \nSS correction %.2f deg., heading correction %.2f deg.\n", cf[1], cf[2], dbm, cf[3]*180/pi-dbm))
+
+
+@
+
+For level flight with zero vertical wind, the transformation equations
+from \href{http://https://www.eol.ucar.edu/raf/Bulletins/bulletin23.html}{RAF Bulletin 23} indicate that, using some small-angle approximations, 
+$-\sin\theta+\sin\phi\tan\beta+\cos\phi\tan\alpha=0$
+where $\theta$ is the pitch, $\phi$ the roll, $\alpha$ the angle
+of attack, and $\beta$ the sideslip angle. Pitch and angle of attack
+can be assumed accurate because the former is checked, as part of
+the recalculation procedure, via determining the correction for Schuler
+oscillation and the latter is calibrated to low uncertainty via speed
+runs. Thus this equation can be used to deduce the offset in pitch
+measurement, while other maneuvers such as yaw maneuvers or reverse-heading
+maneuvers cannot separate a pitch offset from a heading offset. For
+small angles such that $\tan\beta\approx\beta$, $\tan\alpha\approx\alpha$
+and $\sin\theta\approx\theta$, $\beta\sin\phi\approx\mbox{\ensuremath{\theta}-\ensuremath{\alpha\cos\phi}}$.
+With similar angle of attack and pitch in the left-turn and right-turn
+circles, but roll changing sign, it is expected that $\beta$ will
+also change sign symmetrically from right-turn to left-turn circles.
+This can be checked via plots of sideslip vs time, as shown in the
+wind-uncertainty document, but here instead the sideslip will be checked
+by plotting the correction required for $\beta$ to satisfy the preceding
+equation: \\
+\[
+\delta\beta=(\theta-\alpha\cos\phi)/\sin\phi-\beta_{m}\label{eq:sideslip-error}
+\]
+where $\beta_{m}$ is the measured sideslip and $\delta\beta$ is
+an assumed correction to that sideslip. For measurements from the
+circle maneuvers, the mean value of $\delta\beta$ was \Sexpr{dbm}$^{\circ}\pm$\Sexpr{dbsd}$^{\circ}$,
+so this indicates that the error in $\xi$ mostly arises from the
+error in sideslip. The residual error in heading is only \Sexpr{cf[3]*180/pi-dbm}$^{\circ}$.
+
+<<plotSS, fig.lp="fig:", fig.cap="Sideslip measured turning the circle maneuvers, first turning left (19:52:30--19:57:30) and then turning right (19:59:30--20:04:10). Mean values for these segments are indicated by dashed orange lines.", echo=FALSE, include=FALSE, eval=FALSE>>=
+
+plotWAC(DC[, c("Time", "SSLIP")], ylab="Sideslip [deg.]")
+# lines(c(DC$Time[1], DC$Time[length(DC$Time)]), c(0.3,0.3), col='red', lty=2, lwd=4)
+lines(c(DC$Time[1], DC$Time[length(DC$Time)]), c(0.,0.), col='red', lty=2, lwd=4)
+yl <- mean(DCL$SSLIP)
+lines(c(DCL$Time[1], DCL$Time[length(DCL$Time)]), c(yl,yl), col='darkorange', lty=2, lwd=4)
+yr <- mean(DCR$SSLIP)
+lines(c(DCR$Time[1], DCR$Time[length(DCR$Time)]), c(yr,yr), col='darkorange', lty=2, lwd=4)
+
+@
+
+
+\section{Conclusions}
+
+The circle maneuver from WINTER tf01 supports the validity of the wind
+measurements except for requiring a significant change in the sideslip
+offset. The indicated error in true airspeed and hence in the longitudinal component of
+the wind is only about \Sexpr{round(cf[2], 1)}\,m/s,
+small compared to the expected uncertainty of about 0.3\,m/s. The
+analysis indicates that a large correction to sideslip, of magnitude
+\Sexpr{round(-dbm,2)}$^{\circ}$ should be made to the sensitivity
+coefficients previously recommended for FRAPPE.\footnote{The reason for the change in sideslip sensitivity coefficients vs
+those determined previously (cf.\ \href{https://docs.google.com/a/ucar.edu/file/d/0B1kIUH45ca5AVFlKeHpWVG5Ed1U/edit?usp=drive_web}{this document}) is that the present analysis considers
+the effect of pitch on the deduced sideslip offset while it was assumed
+in the previous study that pitch would remain the same in right vs
+left turns. Surprisingly, that turns out not to be the case, so inclusion
+of pitch is important when determining the sideslip offset.} With this correction
+to sideslip, the indicated heading correction is \Sexpr{round(cf[3]*180/pi-dbm, 2)}$^{\circ}$.
+This is small enough
+to be within or close to likely uncertainty, so it may be preferable to impose
+no correction to heading. The corrections were iterated by making these changes and recalculating, leading to best results for 0.14\,m/s subtracted from TASX, 0.57$^{\circ}$ subtracted
+from SSRD, and 0.14$^{\circ}$ subtracted from THDG.
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% optional section
+
+\section{Math details}
+\ifmath
+
+This section contains a long derivation to demonstrate that circle
+maneuvers cannot separate a heading error from a sideslip error and
+to justify some of the equations used. It is normally suppressed (via
+setting the chunk option 'eval=FALSE' but could be enabled to see
+this. It is not essential to the arguments here and is available elsewhere,
+esp.\ in \href{http://https://www.eol.ucar.edu/raf/Bulletins/bulletin23.html}{RAF Bulletin 23}.
+
+The three components of the relative wind in aircraft-relative coordinates
+are
+
+\begin{equation}
+\mathbf{v_{r}}=-\begin{pmatrix}V^{*}\\
+V^{*}\tan\beta\\
+V^{*}\tan\alpha
+\end{pmatrix}\label{eq:rel-wind}
+\end{equation}
+where $\alpha$ and $\beta$ are respectively the angle of attack
+and sideslip angle, and $V^{*}=\ensuremath{V/\sqrt{1+\tan^{2}\alpha+\tan^{2}\beta}}$
+where $V$ is the true airspeed. The sign convention is such that
+the relative wind is positive when \emph{from} the direction of the
+axis for each component. If the contribution from rotation between
+the radome and the IRU is neglected as small, the full equations for
+the relative wind transformed to Earth coordinates are:
+
+
+\[
+T_{1}=\left(\begin{array}{ccc}
+1 & 0 & 0\\
+0 & \cos\phi & -\sin\phi\\
+0 & \sin\phi & \cos\phi
+\end{array}\right)
+\]
+
+
+\[
+T_{2}=\left(\begin{array}{ccc}
+\cos\theta & 0 & \sin\theta\\
+0 & 1 & 0\\
+-\sin\theta & 0 & \cos\theta
+\end{array}\right)
+\]
+
+
+\[
+T_{3}=\left(\begin{array}{ccc}
+\cos\psi & -\sin\psi & 0\\
+\sin\psi & \cos\psi & 0\\
+0 & 0 & 1
+\end{array}\right)
+\]
+
+
+where \{$\phi,\,\theta,\,\psi$\} are \{roll, pitch, heading\}.
+
+The transformation should be made in the following order: 
+\begin{enumerate}
+\item Rotate by $T_{1}$ using the roll angle $\phi^{\prime}$ measured
+by the gust-pod IRU (CROLL\_GP) to level the wings by a rotation about
+the x axis. 
+\item Rotate by $T_{2}$ using the pitch angle $\theta^{\prime}$ (CPITCH\_GP)
+to level the aircraft by a rotation about the y axis.
+\item Rotate by $T_{3}$ using the heading angle $\psi^{\prime}$ (CTHDG\_GP)
+to obtain components in a true-north reference frame. At this point,
+the relative-wind vector in an Earth-reference coordinate system is
+$\mathbf{v}_{r}=T_{3}(T_{2}(T_{1}\mathbf{v}))$ where $\mathbf{v}$
+is given by (\ref{eq:rel-wind}).
+\end{enumerate}
+At this point, the measured ground-speeds of the gust pod can be added
+to the relative wind to get the true Earth-relative wind: 
+
+
+\begin{equation}
+\mathbf{v_{E}^{\prime}}=\mathbf{T_{3}}(\mathbf{T_{2}}(\mathbf{T_{1}}\mathbf{v_{r}}))+\mathbf{v_{g}}\label{eq:earth-rel-wind}
+\end{equation}
+
+
+To evaluate these results, it is convenient to assume that pitch is
+small except as it affects the vertical wind. Then multiplying the relative wind matrix (\ref{eq:rel-wind})
+by the other two matrices and approximating $V^{*}\approx V$ gives\\
+\begin{equation}
+\mathbf{v_{E}^{\prime}}=-V\begin{pmatrix}\cos\psi-\sin\psi\cos\phi\tan\beta+\sin\psi\sin\phi\tan\alpha\\
+\sin\psi+\cos\psi\cos\phi\tan\beta-\cos\psi\sin\phi\tan\alpha\\
+-\sin\theta+\sin\phi\tan\beta+\cos\phi\tan\alpha
+\end{pmatrix}\mathbf{+v_{g}^{\prime}}\label{eq:rel-w-in-E-frame}
+\end{equation}
+
+
+As in Lenschow 1972, this gives coordinates in a reference frame where
+the $x$-axis is north, $y$-axis is east, and $z$-axis is down.
+The components relative to axes where $x$ is east, $y$ is north,
+and $z$ is upward are obtained by exchanging the first and second
+rows in the matrix in (\ref{eq:rel-w-in-E-frame} and changing the
+sign of the third row:
+
+\begin{equation}
+\mathbf{v_{E}}=-V\begin{pmatrix}\sin\psi+\cos\psi\cos\phi\tan\beta-\cos\psi\sin\phi\tan\alpha\\
+\cos\psi-\sin\psi\cos\phi\tan\beta+\sin\psi\sin\phi\tan\alpha\\
+\sin\theta-\sin\phi\tan\beta-\cos\phi\tan\alpha
+\end{pmatrix}\mathbf{+v_{g}}\label{eq:rel-w-in-E-frame-1}
+\end{equation}
+
+
+Consider the effect of assumed errors in $V$, $\beta$ and $\Psi$,
+denoted $\delta V$, $\delta\beta$, and $\delta\Psi$, neglect terms
+involving $\alpha$ or $\beta$ when there is another dominant term,
+and approximate $\sec\beta\approx1$. Then the change in the wind
+relative to the Earth, as a function of these three assumed perturbations,
+is approximately
+
+\[
+\delta\mathbf{v_{E}=}\begin{pmatrix}-\sin\psi\\
+-\cos\psi\\
+\sin\theta+\sin\phi\tan\beta+\cos\phi\tan\alpha
+\end{pmatrix}\delta V
+\]
+\begin{equation}
++V\begin{pmatrix}-\cos\psi\\
+\sin\psi\\
+0
+\end{pmatrix}\delta\Psi\label{eq:ve-derivative}
+\end{equation}
+\[
++V\begin{pmatrix}-\cos\psi\cos\phi\\
+\sin\psi\cos\phi\\
+\sin\phi
+\end{pmatrix}\delta\beta
+\]
+The resulting equations for the effect of errors on the horizontal
+wind components are:\\
+\begin{eqnarray}
+\delta v_{E,x} & = & -\sin\psi\delta V-V\cos\psi(\delta\psi+\cos\phi\delta\beta)\label{eq:delta-xy}\\
+\delta v_{E,y} & = & -\cos\psi\delta V+V\sin\psi(\delta\psi+\cos\phi\delta\beta)\nonumber 
+\end{eqnarray}
+These equations show that, for roll with the same absolute value through
+the left and right turns, the dependence on $\delta\Psi$ and on $\delta\beta$
+is the same, so it is only possible to determine a combination of
+these errors given by $\delta\gamma=\delta\psi+\cos\phi\delta\beta.$ 
+\else
+  -- a long section of equations is suppressed here; uncomment \%\textbackslash mathtrue near line 64 to see it --
+\fi
+%%%%%%%%%%%%%%%%%%%%%%%%%% end of optional section
+
+\begin{center}
+\textsf{\textcolor{blue}{-- End of Memo --}}
+\par\end{center}
+\vfill\eject
+
+Reproducibility:
+
+\begin{tabular}{ll}
+\textsf{\textsc{\textcolor{blue}{Project:}}} & \Sexpr{thisFileName}\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Archive package:}}} & \Sexpr{thisFileName}.zip\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Contains:}}} & attachment list below\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Program:}}} & \Sexpr{thisFileName}.Rnw\tabularnewline
+\textsf{\textsc{\textcolor{blue}{Original Data:}}} & /scr/raf\_data/\Sexpr{Project}/\Sexpr{Project}\Sexpr{Flight}.nc \tabularnewline
+\textsf{\textsc{\textcolor{blue}{Git:}}} & https://github.com/WilliamCooper/\Sexpr{thisFileName}.git\tabularnewline
+\end{tabular}
+
+\attachm{\Sexpr{thisFileName}.Rnw\\\Sexpr{thisFileName}.R\\\Sexpr{thisFileName}.pdf\\chunks/CircleSearch.R\\SessionInfo}
+%\cc{first attachment\\second\\3rd att}
+%\attach{attachment}
+%\attachm{first\\second} %\cc{first attachment\\second\\3rd att}
+<<save-system-info, echo=FALSE>>= 
+cat (toLatex(sessionInfo()), file="SessionInfo")
+
+@ 
+<<make-zip-archive, echo=FALSE, INCLUDE=TRUE>>=
+system (sprintf("zip %s.zip %s.Rnw %s.R %s.pdf ./chunks/CircleSearch.R SessionInfo", 
+                thisFileName, thisFileName, thisFileName, thisFileName))
+
+@ 
+
+
+\end{document}

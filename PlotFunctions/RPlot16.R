@@ -45,10 +45,11 @@ RPlot16 <- function (data) {
   # while there is another REJDOF_LPC for the CDP, there is no total count to normalize
   DF <- data[, c("Time", "REJDOF_LPT")]
   DF$DOFREJ <- 100 * data$TCNTF_LPT / (data$REJDOF_LPT + data$TCNTF_LPT + 0.1)
+  DF$DOFREJ <- SmoothInterp (DF$DOFREJ)
   DF$REJDOF_LPT <- NULL
   plotWAC(DF, ylab='% DOF-accepted', ylim=c(0,100))
   DF <- data[, c("Time", "REJAT_LPT")]
-  DF$TTACC <- data$TCNTF_LPT / (data$TCNTF_LPT + data$REJAT_LPT + 0.1)
+  DF$TTACC <- SmoothInterp (100 * data$TCNTF_LPT / (data$TCNTF_LPT + data$REJAT_LPT + 0.1))
   DF$REJAT_LPT <- NULL
   plotWAC (DF, ylab='% TOF-accepted', ylim=c(0,100))
   op <- par (mar=c(5,4,1,1)+0.1)

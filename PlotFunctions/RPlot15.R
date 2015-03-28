@@ -25,7 +25,8 @@ RPlot15 <- function(data) {
   op <- par (mar=c(2,4,1,1)+0.1)
   data$USHF <- data$USHFLW_RPC/10
   plotWAC (data[, c("Time", "USMPFLW_RPC", "USHF", "FCNC", "XICNC",
-                    "PFLWC_RPT")], ylab="flows", legend.position='topright')
+                    "PFLWC_RPT")], ylab="flows", legend.position='topright',
+           ylim=c(0,2.5))
   hline (0.82, 'blue'); hline (1, 'darkgreen'); hline(0.5, 'red'); hline (1.5, 'red')
   legend ("topleft", legend=c("dashed red: limits for FCNC, XICNC, PFLWC", 
           "dashed blue-green: expected values for corresponding flows"), text.col=c('red', 'blue'), cex=0.55)

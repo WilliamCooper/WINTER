@@ -4,6 +4,7 @@
 ## testing testing 123
 
 library(knitr)
+library(ncdf)
 opts_chunk$set(echo=FALSE, include=TRUE, fig.lp="fig:")
 opts_chunk$set(fig.width=9.5, fig.height=7, fig.align="center", 
                digits=4, fig.show="asis", fig.path="Figures/WR-")

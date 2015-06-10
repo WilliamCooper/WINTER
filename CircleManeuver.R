@@ -12,10 +12,10 @@ opts_knit$set(eval.after = "fig.cap")
 thisFileName <- "CircleManeuver"
 
 #### this section specifies defaults, changed by run-time arguments or user interaction
-Flight <- "tf01"        # this was the test flight with a circle maneuver
+Flight <- "rf13"        # this was the test flight with a circle maneuver
 Project <- "WINTER"
-startCircles <- 195200  # use 1955 to exclude some problem areas in the first circle
-endCircles <- 200455
+startCircles <- 180900  # use 1955 to exclude some problem areas in the first circle
+endCircles <- 181600
 UserInteraction <- TRUE
 recalculateWind <- FALSE
 findWindFromGPS <- FALSE
@@ -104,7 +104,7 @@ if (ReloadData) {
               "WDC", "WSC", "GGVEW", "GGVNS", "VEW", "VNS", "TASX",
               "ADIFR", "SSLIP", "PITCH", "ATTACK",
               "ROLL", "THDG", "BDIFR", "EWX", "GGVSPD", "PSFD", "PSFRD", "QCF", "QCFR",
-              "PSFDC", "PSFC", "QCFRC",
+              "PSFDC", "PSFC", "QCFRC", "QCFC",
               "WIC", "GGVEW", "GGVNS", "VSPD", "ATX", "VNSC", "VEWC")
   D <- getNetCDF (fname, VarNames)      # this handles high-rate data also
   save(D, file="~/RStudio/DEEPWAVE/CircleData.Rdata")
@@ -150,6 +150,8 @@ if (recalculateWind) {
   D$SSLIP <- D$SSRD <- 1.610 + 13.4098 * D$BDIFR / D$QCFR
   ##                   -0.57 ## to remove the offset found here.
   D$TASX <- TrueAirspeed (MachNumber (D$PSFC, D$QCFRC, D$EWX), D$ATX, D$EWX/D$PSFC)
+  # print ("TEMPORARY: Using QCFC for TASX")
+  # D$TASX <- TrueAirspeed (MachNumber (D$PSFDC, D$QCFC, D$EWX), D$ATX, D$EWX/D$PSFDC)
   ##        -0.14  ## to remove indicated correction from fits in this routine
   ## D$THDG <- D$THDG - 0.14   ## this correction would remove the heading error
   ##startCircles = 195500        ## this is also SPECIAL for this case; exclude normally
